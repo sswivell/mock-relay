@@ -1,3 +1,4 @@
+"""Admin HTTP server: JSON API endpoints, match probing and fixture management."""
 from __future__ import annotations
 import http.server
 import json

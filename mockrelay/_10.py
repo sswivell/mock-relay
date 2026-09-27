@@ -1,3 +1,4 @@
+"""Fixture store: content-addressed JSON files under fixtures_dir, with ids and listing."""
 from __future__ import annotations
 import hashlib
 import json

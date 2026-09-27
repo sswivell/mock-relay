@@ -1,3 +1,4 @@
+"""Proxy handler and server: request routing, record/replay dispatch, 502 handling."""
 from __future__ import annotations
 import http.server
 import random

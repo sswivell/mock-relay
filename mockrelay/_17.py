@@ -1,3 +1,4 @@
+"""Fixture counting helpers for status output."""
 from __future__ import annotations
 from typing import Dict
 
