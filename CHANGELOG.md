@@ -6,6 +6,8 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- `mockrelay init --force` to replace an existing `mockrelay.yaml` instead of refusing
+
 - `match_priority` config key to reorder the matching criteria `path`, `body`, `query`, and `literal`, fully reversibly, resolvable globally, per upstream, and per route
 - Per-fixture integer `match.priority`, which outranks the specificity criteria; higher wins, negative values demote
 - `X-MockRelay-Priority` response header when the winning fixture sets a non-zero priority

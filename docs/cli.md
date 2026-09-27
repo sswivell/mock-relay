@@ -30,6 +30,7 @@
 ## init
 
     mockrelay init
+    mockrelay init --force
 
 ## config
 
