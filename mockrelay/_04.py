@@ -1,18 +1,18 @@
 """Provides terminal user interface utilities, including text formatting, status logging, and animated loading spinners."""
 from __future__ import annotations
+
 import contextlib
 import sys
 import threading
 import time
-from typing import Dict, List, Optional
 
 from ._01 import _09 as _01
 from ._02 import _05 as _02
-from ._03 import _14 as _03
 from ._03 import _09 as _04
+from ._03 import _14 as _03
 from ._03 import _15 as _05
 
-_06: Dict[str, List[str]] = {
+_06: dict[str, list[str]] = {
     "dots": ["\u280b","\u2819","\u2839","\u2838","\u283c","\u2834","\u2826","\u2827","\u2807","\u280f"],
     "bar": ["|","/","-","\\"],
     "arrow": ["\u2190","\u2196","\u2191","\u2197","\u2192","\u2198","\u2193","\u2199"],
@@ -25,11 +25,11 @@ _06: Dict[str, List[str]] = {
 }
 
 
-def _07(name: str) -> List[str]:
+def _07(name: str) -> list[str]:
     return _06.get(name, _06["dots"])
 
 
-def _08(name: str = "dots") -> List[str]:
+def _08(name: str = "dots") -> list[str]:
     return _07(name)
 
 
@@ -50,7 +50,7 @@ def _10(s: str) -> int:
     return out
 
 
-def _11(title: str = "M O C K R E L A Y", theme: Optional[str] = None,
+def _11(title: str = "M O C K R E L A Y", theme: str | None = None,
         show_brand: bool = True) -> None:
     if not _01.view:
         return
@@ -69,28 +69,28 @@ def _11(title: str = "M O C K R E L A Y", theme: Optional[str] = None,
     print()
 
 
-def _12(text: Optional[str] = None, theme: Optional[str] = None) -> None:
+def _12(text: str | None = None, theme: str | None = None) -> None:
     if not _01.brand_show or not _01.view:
         return
     label = text or _02()
     print("  " + _05(f"\u00b7 {label} \u00b7", theme))
 
 
-def _13(text: str, theme: Optional[str] = None) -> None:
+def _13(text: str, theme: str | None = None) -> None:
     if not _01.view:
         return
     print()
     print(_05(text, theme, bold=True))
 
 
-def _14(width: Optional[int] = None, char: str = "\u2500",
-        theme: Optional[str] = None) -> None:
+def _14(width: int | None = None, char: str = "\u2500",
+        theme: str | None = None) -> None:
     if not _01.view:
         return
     print(_05(char * (width or int(_01.width)), theme))
 
 
-def _15(label: str, width: Optional[int] = None, theme: Optional[str] = None) -> None:
+def _15(label: str, width: int | None = None, theme: str | None = None) -> None:
     if not _01.view:
         return
     w = width or int(_01.width)
@@ -99,7 +99,7 @@ def _15(label: str, width: Optional[int] = None, theme: Optional[str] = None) ->
     print(_05("\u2500" * side + l + "\u2500" * (w - side - len(l)), theme))
 
 
-def _16(key, value, key_width: int = 16, theme: Optional[str] = None,
+def _16(key, value, key_width: int = 16, theme: str | None = None,
         indent: int = 2) -> None:
     if not _01.view:
         return
@@ -107,7 +107,7 @@ def _16(key, value, key_width: int = 16, theme: Optional[str] = None,
     print(" " * indent + _05(f"{key}{pad}", theme) + str(value))
 
 
-def _17(headers: List[str], rows: List[List], theme: Optional[str] = None,
+def _17(headers: list[str], rows: list[list], theme: str | None = None,
         indent: int = 2, gap: int = 2) -> None:
     if not _01.view:
         return
@@ -136,8 +136,8 @@ def _18(kind: str, message: str) -> None:
     print(f"  {c}{g}{_03} {message}" if _04 else f"  {g} {message}")
 
 
-def _19(content: str, title: Optional[str] = None, width: Optional[int] = None,
-        theme: Optional[str] = None) -> None:
+def _19(content: str, title: str | None = None, width: int | None = None,
+        theme: str | None = None) -> None:
     if not _01.view:
         return
     lines = content.splitlines() or [""]
@@ -158,7 +158,7 @@ def _19(content: str, title: Optional[str] = None, width: Optional[int] = None,
 
 
 @contextlib.contextmanager
-def _20(label: str = "loading", style: str = "dots", theme: Optional[str] = None):
+def _20(label: str = "loading", style: str = "dots", theme: str | None = None):
     frames = _07(style)
     stop = threading.Event()
 

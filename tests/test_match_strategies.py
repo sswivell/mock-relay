@@ -359,8 +359,8 @@ def test_28_priority_round_trips_through_fixtures():
 
 
 def test_29_priority_differentiates_fixture_ids():
-    from mockrelay._10 import _04 as Store
     from mockrelay._06 import _01 as Spec
+    from mockrelay._10 import _04 as Store
     a = Spec(method="GET", path="/x")
     b = Spec(method="GET", path="/x", priority=2)
     assert Store._09("u", a) == Store._09("u", Spec(method="GET", path="/x"))

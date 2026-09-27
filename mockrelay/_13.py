@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 import http.server
 import random
 import socketserver
 import threading
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import parse_qsl, urlparse
 
 from ._06 import _01 as _02
@@ -12,14 +13,14 @@ from ._06 import _04 as _03
 from ._06 import _05 as _04
 from ._06 import _06 as _05
 from ._07 import _05 as _06
-from ._07 import _07 as _07
+from ._07 import _07 as _07  # noqa: PLC0414 - obfuscation alias
 from ._08 import _02 as _08
-from ._09 import _21 as _33
-from ._09 import _22 as _32
-from ._09 import _29 as _34
-from ._09 import _25 as _35
 from ._09 import _05 as _09
 from ._09 import _06 as _10
+from ._09 import _21 as _33
+from ._09 import _22 as _32
+from ._09 import _25 as _35
+from ._09 import _29 as _34
 from ._11 import _01 as _12
 from ._12 import _02 as _13
 from ._12 import _03 as _14
@@ -33,7 +34,7 @@ class _18:
         self.cfg = cfg
         self.store = store
         self.metrics = metrics
-        self.counter: Dict[str, int] = {}
+        self.counter: dict[str, int] = {}
         self.lock = threading.Lock()
 
 
@@ -69,7 +70,7 @@ def _19(state: _18):
             cl = int(self.headers.get("Content-Length", 0) or 0)
             raw = self.rfile.read(cl) if cl else b""
 
-            q_multi: Dict[str, List[str]] = {}
+            q_multi: dict[str, list[str]] = {}
             for k, v in parse_qsl(raw_target.query, keep_blank_values=True):
                 q_multi.setdefault(k, []).append(v)
             req_body = _13(raw, self.headers.get("content-type", ""))
@@ -116,7 +117,7 @@ def _19(state: _18):
             try:
                 st, hdrs, rbody = _16(target_url, method, headers,
                                       raw if raw else None)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - any upstream failure becomes a 502
                 metrics._06(upstream, 502, "error")
                 metrics._07(method, norm_path, 502, "error")
                 return self._26(502, {"error": "upstream failed", "detail": str(e)})
@@ -161,7 +162,7 @@ def _19(state: _18):
             self._28(status, __import__("json").dumps(body_dict).encode(),
                      {"Content-Type": "application/json"})
 
-        def _27(self, rec, fid: str = "", info: Optional[Dict[str, Any]] = None):
+        def _27(self, rec, fid: str = "", info: dict[str, Any] | None = None):
             hdrs = {k: v for k, v in rec.headers.items() if k.lower() not in _15}
             if info:
                 hdrs["X-MockRelay-Match"] = str(info.get("strategy") or "exact")
@@ -171,7 +172,7 @@ def _19(state: _18):
                     hdrs["X-MockRelay-Priority"] = str(info["priority"])
             self._28(rec.status, _14(rec.body), hdrs)
 
-        def _28(self, status: int, body: bytes, headers: Dict[str, str]):
+        def _28(self, status: int, body: bytes, headers: dict[str, str]):
             self.send_response(status)
             for k, v in headers.items():
                 if k.lower() in _15:
@@ -182,7 +183,7 @@ def _19(state: _18):
             if self.command != "HEAD":
                 try:
                     self.wfile.write(body)
-                except Exception:
+                except Exception:  # noqa: BLE001, S110 - client disconnected mid-write
                     pass
 
         def do_GET(self): self._21()

@@ -1,9 +1,9 @@
 from __future__ import annotations
+
 import json
 import sys
 import urllib.error
 import urllib.request
-
 
 _01 = [
     ("GET", "http://localhost:8080/gh/users/octocat", None),
@@ -19,7 +19,7 @@ def _02(method, url, body):
             return r.status
     except urllib.error.HTTPError as e:
         return e.code
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - CLI demo, any transport error is a 0
         print(f"  {method} {url} -> transport error: {e}")
         return 0
 

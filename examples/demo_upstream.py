@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import json
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -43,7 +44,7 @@ class _01(BaseHTTPRequestHandler):
         raw = self.rfile.read(length) if length else b""
         try:
             payload = json.loads(raw) if raw else {}
-        except Exception:
+        except Exception:  # noqa: BLE001 - demo upstream, bad JSON is just an empty payload
             payload = {}
         if self.path == "/v1/users":
             return self._02(201, {

@@ -4,13 +4,13 @@ from __future__ import annotations
 import difflib
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from ._06 import _06 as _01
 
 _MODES = ("auto", "exact", "wildcard", "regex", "fuzzy")
 
-_PREFIX: Tuple[Tuple[str, str], ...] = (
+_PREFIX: tuple[tuple[str, str], ...] = (
     ("exact:", "exact"),
     ("==", "exact"),
     ("wildcard:", "wildcard"),
@@ -33,7 +33,7 @@ _RANK = {"exact": 1000, "case": 960, "path": 950,
          "wildcard": 600, "regex": 400, "fuzzy": 100}
 _CRITERIA = ("path", "body", "query", "literal")
 _DEFAULT_ORDER = ("path", "body", "query", "literal")
-_TYPES: Dict[str, Any] = {
+_TYPES: dict[str, Any] = {
     "string": str, "number": (int, float), "integer": int, "float": float,
     "bool": bool, "null": type(None), "array": (list, tuple), "object": dict,
 }
@@ -43,11 +43,11 @@ _SEL = re.compile(r"\[([^\]]*)\]")
 _META_RE = re.compile(r"[*?\[]")
 _PATH_META_RE = re.compile(r"[*\[]")
 _UUID = re.compile(
-    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)
 _CACHE_MAX = 512
 
-_GLOB: Dict[Tuple[str, bool], Any] = {}
-_RX: Dict[Tuple[str, bool], Any] = {}
+_GLOB: dict[tuple[str, bool], Any] = {}
+_RX: dict[tuple[str, bool], Any] = {}
 
 
 @dataclass(frozen=True)
@@ -56,7 +56,7 @@ class _07:
     threshold: float = 0.86
     ignore_case: bool = False
     fuzzy_enabled: bool = False
-    order: Tuple[str, ...] = _DEFAULT_ORDER
+    order: tuple[str, ...] = _DEFAULT_ORDER
 
 
 def _08(s: Any) -> str:
@@ -79,7 +79,7 @@ def _09(pat: str, ignore_case: bool = False):
     hit = _GLOB.get(key)
     if hit is not None:
         return hit
-    out: List[str] = []
+    out: list[str] = []
     i, n = 0, len(pat)
     while i < n:
         c = pat[i]
@@ -126,7 +126,7 @@ def _10(pat: str, ignore_case: bool = False):
     return rx
 
 
-def _11(pat: Any, mode: str = "auto") -> Tuple[str, str]:
+def _11(pat: Any, mode: str = "auto") -> tuple[str, str]:
     s = pat if isinstance(pat, str) else str(pat)
     low = s.lower()
     for pfx, kind in _PREFIX:
@@ -139,8 +139,8 @@ def _11(pat: Any, mode: str = "auto") -> Tuple[str, str]:
     return "exact", s
 
 
-def _12(pat: Any, actual: Any, opts: Optional[_07] = None,
-        mode: str = "auto") -> Optional[int]:
+def _12(pat: Any, actual: Any, opts: _07 | None = None,
+        mode: str = "auto") -> int | None:
     o = opts or _07()
     auto = mode == "auto" and o.mode == "auto"
     kind, body = _11(pat, o.mode if mode == "auto" else mode)
@@ -169,7 +169,7 @@ def _12(pat: Any, actual: Any, opts: Optional[_07] = None,
     return None
 
 
-def _13(e: Any, a: Any, opts: Optional[_07] = None,
+def _13(e: Any, a: Any, opts: _07 | None = None,
         mode: str = "auto") -> bool:
     o = opts or _07()
     if isinstance(e, str):
@@ -191,7 +191,7 @@ def _13(e: Any, a: Any, opts: Optional[_07] = None,
     return e == a
 
 
-def _14(e: Any, a: Any, opts: Optional[_07] = None,
+def _14(e: Any, a: Any, opts: _07 | None = None,
         mode: str = "auto") -> bool:
     o = opts or _07()
     if isinstance(e, dict):
@@ -214,7 +214,7 @@ def _14(e: Any, a: Any, opts: Optional[_07] = None,
     return _13(e, a, o, mode)
 
 
-def _15(k: Any, v: Any, a: Any, opts: Optional[_07] = None,
+def _15(k: Any, v: Any, a: Any, opts: _07 | None = None,
         mode: str = "auto") -> bool:
     o = opts or _07()
     if not isinstance(k, str) or not k or not isinstance(a, dict):
@@ -235,8 +235,7 @@ def _15(k: Any, v: Any, a: Any, opts: Optional[_07] = None,
         return _14(v, a[k], o, mode)
     if k in ("*", "$"):
         return any(_14(v, av, o, mode) for av in a.values())
-    if k.startswith("$."):
-        k = k[2:]
+    k = k.removeprefix("$.")
     if k.startswith(".."):
         return _17(k[2:], v, a, o, mode)
     if _META_RE.search(k) and "[" not in k:
@@ -252,7 +251,7 @@ def _15(k: Any, v: Any, a: Any, opts: Optional[_07] = None,
     return False
 
 
-def _16(node: Any, expr: str) -> List[Any]:
+def _16(node: Any, expr: str) -> list[Any]:
     parts = [p for p in expr.split(".") if p]
     if not parts:
         return []
@@ -273,13 +272,13 @@ def _16(node: Any, expr: str) -> List[Any]:
         node = (node[idx],)
     if not rest:
         return [node]
-    out: List[Any] = []
+    out: list[Any] = []
     for item in (node if isinstance(node, (list, tuple)) else [node]):
         out.extend(_16(item, rest))
     return out
 
 
-def _17(name: str, v: Any, node: Any, opts: Optional[_07] = None,
+def _17(name: str, v: Any, node: Any, opts: _07 | None = None,
         mode: str = "auto", depth: int = 0) -> bool:
     o = opts or _07()
     if depth > 8:
@@ -295,7 +294,7 @@ def _17(name: str, v: Any, node: Any, opts: Optional[_07] = None,
     return False
 
 
-def _18(name: str, arg: Any, a: Any, opts: Optional[_07] = None,
+def _18(name: str, arg: Any, a: Any, opts: _07 | None = None,
         mode: str = "auto") -> bool:
     o = opts or _07()
     if name == "$eq":
@@ -374,7 +373,7 @@ def _18(name: str, arg: Any, a: Any, opts: Optional[_07] = None,
     return False
 
 
-def _19(v: Any) -> Optional[bool]:
+def _19(v: Any) -> bool | None:
     if isinstance(v, dict) and len(v) == 1 and "$exists" in v:
         arg = v["$exists"]
         if isinstance(arg, bool):
@@ -392,12 +391,12 @@ def _20(a: str, b: str) -> float:
     return difflib.SequenceMatcher(None, a, b).ratio()
 
 
-def _21(fx: _01, method: str, path: str, query: Dict[str, List[str]],
-        body: Any, opts: Optional[_07] = None) -> Dict[str, Any]:
+def _21(fx: _01, method: str, path: str, query: dict[str, list[str]],
+        body: Any, opts: _07 | None = None) -> dict[str, Any]:
     base = opts or _07()
     m = fx.match
     o = _23(base, m)
-    checks: List[Dict[str, Any]] = []
+    checks: list[dict[str, Any]] = []
 
     want = str(getattr(m, "method", ""))
     m_ok = want.upper() == str(method or "").upper()
@@ -438,9 +437,9 @@ def _21(fx: _01, method: str, path: str, query: Dict[str, List[str]],
     }
 
 
-def _22(fixtures: List[_01], method: str, path: str,
-        query: Dict[str, List[str]], body: Any,
-        opts: Optional[_07] = None) -> List[Dict[str, Any]]:
+def _22(fixtures: list[_01], method: str, path: str,
+        query: dict[str, list[str]], body: Any,
+        opts: _07 | None = None) -> list[dict[str, Any]]:
     rows = [_21(f, method, path, query, body, opts) for f in fixtures]
     rows.sort(key=lambda r: r["id"])
     rows.sort(key=lambda r: (r["rank"] if r["matched"] else ()),
@@ -449,7 +448,7 @@ def _22(fixtures: List[_01], method: str, path: str,
     return rows
 
 
-def _23(base: Optional[_07], m: Any) -> _07:
+def _23(base: _07 | None, m: Any) -> _07:
     b = base or _07()
     mode = getattr(m, "match_mode", None) or b.mode
     if mode not in _MODES:
@@ -471,14 +470,14 @@ def _23(base: Optional[_07], m: Any) -> _07:
     )
 
 
-def _26_order(v: Any) -> Tuple[str, ...]:
+def _26_order(v: Any) -> tuple[str, ...]:
     if not v:
         return _DEFAULT_ORDER
     if isinstance(v, str):
         v = [p.strip() for p in v.split(",")]
     if not isinstance(v, (list, tuple)):
         return _DEFAULT_ORDER
-    out: List[str] = []
+    out: list[str] = []
     for item in v:
         name = str(item or "").strip().lower()
         if name in _CRITERIA and name not in out:
@@ -489,7 +488,7 @@ def _26_order(v: Any) -> Tuple[str, ...]:
     return tuple(out)
 
 
-def _24(e: Any, a: Any, opts: Optional[_07] = None,
+def _24(e: Any, a: Any, opts: _07 | None = None,
         mode: str = "auto") -> bool:
     o = opts or _07()
     if not isinstance(e, dict) or not e:
@@ -522,7 +521,7 @@ def _24(e: Any, a: Any, opts: Optional[_07] = None,
 
 
 def _25(path: Any) -> str:
-    out: List[str] = []
+    out: list[str] = []
     for seg in str(path or "").split("/"):
         if _INT.match(seg) or _UUID.match(seg):
             out.append("*")
@@ -531,11 +530,11 @@ def _25(path: Any) -> str:
     return "/".join(out)
 
 
-def _28() -> Tuple[str, ...]:
+def _28() -> tuple[str, ...]:
     return _MODES
 
 
-def _29(d: Optional[Dict[str, Any]] = None) -> _07:
+def _29(d: dict[str, Any] | None = None) -> _07:
     src = d or {}
     mode = str(src.get("match_mode") or "auto").strip().lower()
     if mode not in _MODES:
@@ -553,22 +552,22 @@ def _29(d: Optional[Dict[str, Any]] = None) -> _07:
     )
 
 
-def _02(actual: Any, expected: Dict[str, Any]) -> bool:
+def _02(actual: Any, expected: dict[str, Any]) -> bool:
     if not isinstance(actual, dict) or not isinstance(expected, dict):
         return False
     return _14(expected, actual, _07(), "auto")
 
 
-def _03(fx: _01, method: str, path: str, query: Dict[str, List[str]],
-        body: Any, opts: Optional[_07] = None) -> bool:
+def _03(fx: _01, method: str, path: str, query: dict[str, list[str]],
+        body: Any, opts: _07 | None = None) -> bool:
     return bool(_21(fx, method, path, query, body, opts)["matched"])
 
 
-def _30_parts(fx: _01, opts: Optional[_07] = None) -> List[int]:
+def _30_parts(fx: _01, opts: _07 | None = None) -> list[int]:
     m = fx.match
     o = _23(opts, m)
     kind, body = _11(getattr(m, "path", ""), o.mode)
-    parts: Dict[str, int] = {
+    parts: dict[str, int] = {
         "path": _BAND.get(kind, 0),
         "body": min(len(m.body_contains or {}), 999),
         "query": min(len(m.query_subset or {}), 999),
@@ -578,7 +577,7 @@ def _30_parts(fx: _01, opts: Optional[_07] = None) -> List[int]:
     return [parts.get(name, 0) for name in order]
 
 
-def _04(fx: _01, opts: Optional[_07] = None) -> int:
+def _04(fx: _01, opts: _07 | None = None) -> int:
     m = fx.match
     o = _23(opts, m)
     kind, body = _11(getattr(m, "path", ""), o.mode)
@@ -590,14 +589,14 @@ def _04(fx: _01, opts: Optional[_07] = None) -> int:
     return score
 
 
-def _36(fx: _01, opts: Optional[_07] = None) -> Tuple[int, ...]:
+def _36(fx: _01, opts: _07 | None = None) -> tuple[int, ...]:
     prio = getattr(fx.match, "priority", None)
     return (int(prio or 0),) + tuple(_30_parts(fx, opts))
 
 
-def _05(fixtures: List[_01], method: str, path: str,
-        query: Dict[str, List[str]], body: Any,
-        opts: Optional[_07] = None) -> Optional[_01]:
+def _05(fixtures: list[_01], method: str, path: str,
+        query: dict[str, list[str]], body: Any,
+        opts: _07 | None = None) -> _01 | None:
     cands = [f for f in fixtures if _03(f, method, path, query, body, opts)]
     if not cands:
         return None
@@ -606,9 +605,9 @@ def _05(fixtures: List[_01], method: str, path: str,
     return cands[0]
 
 
-def _06(fixtures: List[_01], method: str, path: str,
-        query: Dict[str, List[str]], body: Any, counter: Dict[str, int],
-        opts: Optional[_07] = None) -> Optional[_01]:
+def _06(fixtures: list[_01], method: str, path: str,
+        query: dict[str, list[str]], body: Any, counter: dict[str, int],
+        opts: _07 | None = None) -> _01 | None:
     cands = [f for f in fixtures if _03(f, method, path, query, body, opts)]
     if not cands:
         return None

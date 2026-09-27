@@ -1,25 +1,26 @@
 """Data classes for match specs, requests, responses, and fixtures."""
 from __future__ import annotations
+
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
 class _01:
     method: str
     path: str
-    query_subset: Dict[str, List[str]] = field(default_factory=dict)
-    body_contains: Optional[Dict[str, Any]] = None
-    match_mode: Optional[str] = None
-    fuzzy_threshold: Optional[float] = None
-    ignore_case: Optional[bool] = None
-    priority: Optional[int] = None
+    query_subset: dict[str, list[str]] = field(default_factory=dict)
+    body_contains: dict[str, Any] | None = None
+    match_mode: str | None = None
+    fuzzy_threshold: float | None = None
+    ignore_case: bool | None = None
+    priority: int | None = None
 
-    def _02(self) -> Dict[str, Any]:
+    def _02(self) -> dict[str, Any]:
         return {k: v for k, v in asdict(self).items() if v is not None}
 
     @classmethod
-    def _03(cls, d: Dict[str, Any]) -> "_01":
+    def _03(cls, d: dict[str, Any]) -> _01:
         prio = d.get("priority")
         if prio is not None:
             try:
@@ -42,15 +43,15 @@ class _01:
 class _04:
     method: str
     path: str
-    query: Dict[str, List[str]] = field(default_factory=dict)
-    headers: Dict[str, str] = field(default_factory=dict)
+    query: dict[str, list[str]] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict)
     body: Any = None
 
 
 @dataclass
 class _05:
     status: int
-    headers: Dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict)
     body: Any = None
 
 
@@ -61,11 +62,11 @@ class _06:
     match: _01
     request: _04
     response: _05
-    normalize: List[str] = field(default_factory=list)
-    recorded_at: Optional[str] = None
+    normalize: list[str] = field(default_factory=list)
+    recorded_at: str | None = None
     call_index: int = 0
 
-    def _07(self) -> Dict[str, Any]:
+    def _07(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "upstream": self.upstream,
@@ -78,7 +79,7 @@ class _06:
         }
 
     @classmethod
-    def _08(cls, d: Dict[str, Any]) -> "_06":
+    def _08(cls, d: dict[str, Any]) -> _06:
         return cls(
             id=d["id"],
             upstream=d["upstream"],

@@ -1,11 +1,11 @@
 """CLI entry point and argparse-based command handlers."""
 from __future__ import annotations
+
 import argparse
 import json
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from ._04 import _11 as _01
 from ._04 import _15 as _03
@@ -17,10 +17,10 @@ from ._09 import _22 as _31
 from ._09 import _29 as _32
 from ._10 import _04 as _08
 from ._11 import _01 as _09
+from ._12 import _06 as _13
 from ._13 import _18 as _10
 from ._13 import _30 as _11
 from ._14 import _10 as _12
-from ._12 import _06 as _13
 from ._17 import _02 as _17a
 
 
@@ -161,7 +161,7 @@ def _22(args) -> None:
     cfg = _07._07(Path(args.config))
     store = _08(cfg.fixtures_dir)
     method = (args.method or "GET").upper()
-    query: Dict[str, List[str]] = {}
+    query: dict[str, list[str]] = {}
     for pair in args.query or []:
         k, _, v = str(pair).partition("=")
         query.setdefault(k, []).append(v)
@@ -250,7 +250,7 @@ def _21() -> argparse.ArgumentParser:
     return p
 
 
-def _40(argv: Optional[List[str]] = None) -> None:
+def _40(argv: list[str] | None = None) -> None:
     for _stream in (sys.stdout, sys.stderr):
         try:
             _stream.reconfigure(encoding="utf-8", errors="replace")

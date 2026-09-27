@@ -1,6 +1,7 @@
 from __future__ import annotations
+
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 _01 = "{{SECRET}}"
 _02 = re.compile(r"Bearer\s+[A-Za-z0-9._\-]+")
@@ -8,7 +9,7 @@ _03 = re.compile(r"sk_(live|test)_[A-Za-z0-9]+")
 _04 = re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}")
 
 
-def _05(headers: Dict[str, str], redact_list: List[str]) -> Dict[str, str]:
+def _05(headers: dict[str, str], redact_list: list[str]) -> dict[str, str]:
     rl = {h.lower() for h in redact_list}
     return {k: (_01 if k.lower() in rl else v) for k, v in headers.items()}
 

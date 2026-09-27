@@ -1,17 +1,19 @@
 from __future__ import annotations
+
 import hashlib
 import json
 import os
 import time
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict, Iterator, Optional
+from typing import Any
 
-from ._06 import _01 as _01
+from ._06 import _01 as _01  # noqa: PLC0414 - obfuscation alias
 from ._06 import _06 as _02
 
 
 def _03(upstream: str, match: _01) -> str:
-    payload: Dict[str, Any] = {
+    payload: dict[str, Any] = {
         "u": upstream,
         "m": match.method.upper(),
         "p": match.path,
@@ -47,14 +49,14 @@ class _04:
         os.replace(tmp, p)
         return p
 
-    def _07(self, upstream: Optional[str] = None) -> Iterator[_02]:
+    def _07(self, upstream: str | None = None) -> Iterator[_02]:
         search = self.root / upstream if upstream else self.root
         if not search.exists():
             return
         for path in sorted(search.rglob("*.json")):
             try:
                 yield _02._08(json.loads(path.read_text()))
-            except Exception:
+            except Exception:  # noqa: BLE001, S112 - unreadable fixture files are skipped
                 continue
 
     def _08(self, upstream: str, fixture_id: str) -> bool:

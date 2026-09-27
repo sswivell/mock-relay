@@ -1,5 +1,6 @@
 from mockrelay._06 import _01, _04, _05, _06
-from mockrelay._09 import _03 as _match, _05 as _best
+from mockrelay._09 import _03 as _match
+from mockrelay._09 import _05 as _best
 
 
 def test_01():

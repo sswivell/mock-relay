@@ -6,6 +6,12 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- `ruff check .` step in CI, matching the lint command documented in `CONTRIBUTING.md`
+
+### Changed
+
+- Replaced `typing.Dict`/`List`/`Tuple` annotations with built-in generics, and percent-format prints with f-strings
+- `mockrelay/*.py` files are no longer stored with the executable bit set
 - `match_priority` config key to reorder the matching criteria `path`, `body`, `query`, and `literal`, fully reversibly, resolvable globally, per upstream, and per route
 - Per-fixture integer `match.priority`, which outranks the specificity criteria; higher wins, negative values demote
 - `X-MockRelay-Priority` response header when the winning fixture sets a non-zero priority
