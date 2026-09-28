@@ -1,3 +1,4 @@
+"""Terminal theming: color palettes, ANSI gradient rendering and capability detection."""
 from __future__ import annotations
 import os
 import sys

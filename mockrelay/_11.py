@@ -1,3 +1,4 @@
+"""Request metrics: counters, latency and status tracking for the proxy and admin UI."""
 from __future__ import annotations
 import threading
 import time

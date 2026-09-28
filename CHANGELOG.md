@@ -6,6 +6,7 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- Module docstrings for every `mockrelay/*.py` module, as required by `CONTRIBUTING.md`, with a test that keeps the tree honest
 - `match_priority` config key to reorder the matching criteria `path`, `body`, `query`, and `literal`, fully reversibly, resolvable globally, per upstream, and per route
 - Per-fixture integer `match.priority`, which outranks the specificity criteria; higher wins, negative values demote
 - `X-MockRelay-Priority` response header when the winning fixture sets a non-zero priority

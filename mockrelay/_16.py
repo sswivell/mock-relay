@@ -1,3 +1,4 @@
+"""Demo bootstrap: settings and CLI helpers used by examples."""
 from ._01 import _09 as settings
 from ._01 import _10 as unlock
 from ._01 import _11 as lock

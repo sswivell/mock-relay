@@ -1,3 +1,4 @@
+"""Upstream HTTP helper: raw request, body (de)serialization and host:port parsing."""
 from __future__ import annotations
 import json
 import ssl
