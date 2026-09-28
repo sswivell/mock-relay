@@ -1,3 +1,5 @@
+from dataclasses import FrozenInstanceError
+
 import pytest
 
 from mockrelay.errors import Problem
@@ -18,7 +20,7 @@ def test_01_defaults_are_sane_and_ordered():
 
 
 def test_02_limits_are_frozen():
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError):
         DEFAULT_LIMITS.max_request_body = 1
 
 
