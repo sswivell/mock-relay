@@ -21,11 +21,11 @@ LABELS = ROOT / ".github" / "labels.yml"
 
 def main() -> int:
     if not LABELS.exists():
-        print("missing %s" % LABELS, file=sys.stderr)
+        print(f"missing {LABELS}", file=sys.stderr)
         return 1
     entries = yaml.safe_load(LABELS.read_text(encoding="utf-8")) or []
     if not isinstance(entries, list):
-        print("%s is not a list" % LABELS, file=sys.stderr)
+        print(f"{LABELS} is not a list", file=sys.stderr)
         return 1
 
     names = [str(e.get("name") or "") for e in entries]
@@ -33,7 +33,7 @@ def main() -> int:
         print("every entry needs a name", file=sys.stderr)
         return 1
     if len(names) != len(set(names)):
-        print("duplicate label names in %s" % LABELS, file=sys.stderr)
+        print(f"duplicate label names in {LABELS}", file=sys.stderr)
         return 1
 
     failed = 0
@@ -47,12 +47,12 @@ def main() -> int:
             capture_output=True, text=True,
         )
         if result.returncode == 0:
-            print("ok    %s" % name)
+            print(f"ok    {name}")
         else:
             failed += 1
-            print("fail  %s -> %s" % (name, result.stderr.strip()))
+            print(f"fail  {name} -> {result.stderr.strip()}")
 
-    print("%d labels, %d failed" % (len(entries), failed))
+    print(f"{len(entries)} labels, {failed} failed")
     return 1 if failed else 0
 
 
