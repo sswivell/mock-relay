@@ -589,7 +589,7 @@ def _04(fx: _01, opts: _07 | None = None) -> int:
 
 def _36(fx: _01, opts: _07 | None = None) -> tuple[int, ...]:
     prio = getattr(fx.match, "priority", None)
-    return (int(prio or 0),) + tuple(_30_parts(fx, opts))
+    return (int(prio or 0), *tuple(_30_parts(fx, opts)))
 
 
 def _05(fixtures: list[_01], method: str, path: str,

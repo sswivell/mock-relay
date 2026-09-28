@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import sys
 import time
@@ -252,10 +253,10 @@ def _21() -> argparse.ArgumentParser:
 
 def _40(argv: list[str] | None = None) -> None:
     for _stream in (sys.stdout, sys.stderr):
-        try:
+        # Not every stream is reconfigurable: pytest's capture objects, and
+        # a detached stream, both raise here.
+        with contextlib.suppress(AttributeError, ValueError, OSError):
             _stream.reconfigure(encoding="utf-8", errors="replace")
-        except (AttributeError, ValueError, OSError):
-            pass
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv:
         argv = ["serve"]

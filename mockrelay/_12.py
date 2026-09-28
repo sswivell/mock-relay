@@ -18,7 +18,7 @@ def _02(raw: bytes, content_type: str) -> Any:
             return raw.decode("utf-8", "replace")
     if "application/x-www-form-urlencoded" in content_type:
         from urllib.parse import parse_qs
-        return {k: v for k, v in parse_qs(raw.decode()).items()}
+        return dict(parse_qs(raw.decode()))
     return raw.decode("utf-8", "replace")
 
 

@@ -42,7 +42,7 @@ def test_03_spec_round_trip():
         assert raw["match"]["fuzzy_threshold"] == 0.9
         assert raw["match"]["ignore_case"] is True
         assert "body_contains" in raw["match"]
-        back = list(s._07("u"))[0]
+        back = next(iter(s._07("u")))
         assert back.match.match_mode == "fuzzy"
         assert back.match.fuzzy_threshold == 0.9
         assert back.match.ignore_case is True

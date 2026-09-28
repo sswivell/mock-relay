@@ -1,6 +1,7 @@
 """Proxy handler and server: request routing, record/replay dispatch, 502 handling."""
 from __future__ import annotations
 
+import contextlib
 import http.server
 import json
 import random
@@ -194,10 +195,10 @@ def _19(state: _18):
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             if self.command != "HEAD":
-                try:
+                # A client that hangs up mid-response is routine, not an
+                # error worth logging or propagating.
+                with contextlib.suppress(Exception):
                     self.wfile.write(body)
-                except Exception:
-                    pass
 
         def do_GET(self): self._21()
         def do_POST(self): self._21()
