@@ -1,5 +1,6 @@
 """Terminal theming: color palettes, ANSI gradient rendering and capability detection."""
 from __future__ import annotations
+
 import os
 import sys
 from typing import List, Optional, Tuple
@@ -51,7 +52,7 @@ def _08() -> bool:
 _09 = _08()
 
 
-def _10(h: str) -> Tuple[int, int, int]:
+def _10(h: str) -> tuple[int, int, int]:
     h = h.lstrip("#")
     return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
 
@@ -60,7 +61,7 @@ def _11(a: int, b: int, t: float) -> int:
     return round(a + (b - a) * t)
 
 
-def _12(stops, t: float) -> Tuple[int, int, int]:
+def _12(stops, t: float) -> tuple[int, int, int]:
     if len(stops) == 1:
         return stops[0]
     seg = t * (len(stops) - 1)
@@ -79,7 +80,7 @@ def _13(r: int, g: int, b: int, bold: bool = False) -> str:
 _14 = "\x1b[0m"
 
 
-def _15(text: str, theme: Optional[str] = None, bold: Optional[bool] = None) -> str:
+def _15(text: str, theme: str | None = None, bold: bool | None = None) -> str:
     if not _09 or len(text) == 0:
         return text
     if bold is None:
@@ -87,7 +88,7 @@ def _15(text: str, theme: Optional[str] = None, bold: Optional[bool] = None) -> 
     name = theme or _04
     stops = [_10(h) for h in _03.get(name, _03[_04])]
     n = max(len(text) - 1, 1)
-    out: List[str] = []
+    out: list[str] = []
     for i, ch in enumerate(text):
         r, g, b = _12(stops, i / n)
         out.append(_13(r, g, b, bold))
@@ -103,7 +104,7 @@ def _16(name: str) -> None:
     _04 = name
 
 
-def _17() -> List[str]:
+def _17() -> list[str]:
     return sorted(_03.keys())
 
 

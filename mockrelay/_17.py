@@ -1,12 +1,13 @@
 """Fixture counting helpers for status output."""
 from __future__ import annotations
+
 from typing import Dict
 
 from ._10 import _04 as _01
 
 
-def _02(store: _01) -> Dict[str, int]:
-    counts: Dict[str, int] = {}
+def _02(store: _01) -> dict[str, int]:
+    counts: dict[str, int] = {}
     if not store.root.exists():
         return counts
     for d in sorted(store.root.iterdir()):

@@ -1,17 +1,17 @@
 """Admin HTTP server: JSON API endpoints, match probing and fixture management."""
 from __future__ import annotations
+
 import http.server
 import json
 import threading
 from typing import Dict, List
 from urllib.parse import parse_qs, parse_qsl, urlparse
 
-from ._13 import _18 as _01
-from ._13 import _29 as _02
-from ._12 import _06 as _03
 from ._09 import _22 as _11
 from ._09 import _29 as _12
-
+from ._12 import _06 as _03
+from ._13 import _18 as _01
+from ._13 import _29 as _02
 
 _04 = """<!doctype html><html><head><title>MockRelay</title>
 <style>
@@ -103,7 +103,7 @@ def _05(state: _01):
                 upstream = (q.get("upstream") or [None])[0]
                 method = (q.get("method") or ["GET"])[0].upper()
                 path = (q.get("path") or ["/"])[0]
-                qq: Dict[str, List[str]] = {}
+                qq: dict[str, list[str]] = {}
                 for k, v in parse_qsl((q.get("query") or [""])[0],
                                       keep_blank_values=True):
                     qq.setdefault(k, []).append(v)
@@ -133,7 +133,7 @@ def _05(state: _01):
                 if "?" in self.path:
                     q = parse_qs(urlparse(self.path).query)
                     upstream = (q.get("upstream") or [None])[0]
-                out: List[Dict] = []
+                out: list[dict] = []
                 for f in store._07(upstream):
                     out.append(f._07())
                 return self._07(200, out)

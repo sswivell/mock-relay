@@ -1,8 +1,9 @@
 """Terminal theme and rendering settings, with a locked-key settings store."""
 from __future__ import annotations
+
 from typing import Any, Dict
 
-_01: Dict[str, Any] = {
+_01: dict[str, Any] = {
     "theme": "ice", "speed": "000", "view": True, "color": True,
     "width": 56, "progress_width": 32, "bold_headers": True,
     "unicode": True, "prefix": "\u25c7", "ok_glyph": "\u2713", "err_glyph": "\u2717",

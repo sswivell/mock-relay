@@ -1,5 +1,6 @@
 """Request metrics: counters, latency and status tracking for the proxy and admin UI."""
 from __future__ import annotations
+
 import threading
 import time
 from collections import Counter
@@ -12,7 +13,7 @@ class _01:
         self._02: Counter = Counter()
         self._03: Counter = Counter()
         self._04: Counter = Counter()
-        self._05: List[Dict] = []
+        self._05: list[dict] = []
 
     def _06(self, key: str, status: int, mode: str) -> None:
         with self._01:
@@ -29,7 +30,7 @@ class _01:
             del self._05[50:]
 
     def _08(self) -> str:
-        lines: List[str] = []
+        lines: list[str] = []
         with self._01:
             lines.append("# HELP mockrelay_requests_total Total requests")
             lines.append("# TYPE mockrelay_requests_total counter")
@@ -45,6 +46,6 @@ class _01:
                 lines.append(f'mockrelay_mode_total{{mode="{mode}"}} {n}')
         return "\n".join(lines) + "\n"
 
-    def _09(self) -> List[Dict]:
+    def _09(self) -> list[dict]:
         with self._01:
             return list(self._05)

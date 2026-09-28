@@ -220,6 +220,7 @@ def test_08_admin_match_api():
 
 def test_09_match_cli_end_to_end(capsys, tmp_path):
     from argparse import Namespace
+
     from mockrelay._15 import _22
     store = Store(str(tmp_path))
     for fid, path in (("a", "wildcard:/users/*"),

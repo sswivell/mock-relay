@@ -37,7 +37,7 @@ class _18:
         self.cfg = cfg
         self.store = store
         self.metrics = metrics
-        self.counter: Dict[str, int] = {}
+        self.counter: dict[str, int] = {}
         self.lock = threading.Lock()
 
 
@@ -83,7 +83,7 @@ def _19(state: _18):
             cl = int(self.headers.get("Content-Length", 0) or 0)
             raw = self.rfile.read(cl) if cl else b""
 
-            q_multi: Dict[str, List[str]] = {}
+            q_multi: dict[str, list[str]] = {}
             for k, v in parse_qsl(raw_target.query, keep_blank_values=True):
                 q_multi.setdefault(k, []).append(v)
             req_body = _13(raw, self.headers.get("content-type", ""))
@@ -175,7 +175,7 @@ def _19(state: _18):
             self._28(status, json.dumps(body_dict).encode(),
                      {"Content-Type": "application/json"})
 
-        def _27(self, rec, fid: str = "", info: Optional[Dict[str, Any]] = None):
+        def _27(self, rec, fid: str = "", info: dict[str, Any] | None = None):
             hdrs = {k: v for k, v in rec.headers.items() if k.lower() not in _15}
             if info:
                 hdrs["X-MockRelay-Match"] = str(info.get("strategy") or "exact")
@@ -185,7 +185,7 @@ def _19(state: _18):
                     hdrs["X-MockRelay-Priority"] = str(info["priority"])
             self._28(rec.status, _14(rec.body), hdrs)
 
-        def _28(self, status: int, body: bytes, headers: Dict[str, str]):
+        def _28(self, status: int, body: bytes, headers: dict[str, str]):
             self.send_response(status)
             for k, v in headers.items():
                 if k.lower() in _15:
