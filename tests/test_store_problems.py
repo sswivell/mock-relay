@@ -129,11 +129,11 @@ def test_unreadable_file_is_reported(store):
     store._06("u", _fx("ok"))
     locked = store.root / "u" / "locked.json"
     locked.write_text(json.dumps(_fx("x")._07()), encoding="utf-8")
-    os.chmod(locked, 0o000)
+    locked.chmod(0o000)
     try:
         ids = [f.id for f in store._07()]
     finally:
-        os.chmod(locked, 0o600)
+        locked.chmod(0o600)
     if os.geteuid() == 0:
         assert ids == ["ok", "x"]  # root ignores the mode bits
         return

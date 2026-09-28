@@ -1,18 +1,14 @@
-import glob
-import os
+from pathlib import Path
 
 
 def test_all_public_modules_have_docstrings():
-    here = os.path.dirname(os.path.abspath(__file__))
-    pkg = os.path.join(here, "..", "mockrelay")
+    pkg = Path(__file__).resolve().parent.parent / "mockrelay"
     missing = []
-    for path in glob.glob(os.path.join(pkg, "*.py")):
-        base = os.path.basename(path)
-        if base.startswith("__"):
+    for path in sorted(pkg.glob("*.py")):
+        if path.name.startswith("__"):
             continue
-        with open(path, encoding="utf-8") as fh:
-            lines = fh.read().splitlines()
+        lines = path.read_text(encoding="utf-8").splitlines()
         first_stmt = next((line for line in lines if line.strip()), "")
         if not first_stmt.startswith('"""'):
-            missing.append(base)
+            missing.append(path.name)
     assert not missing, f"modules without a docstring: {missing}"

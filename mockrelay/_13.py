@@ -89,7 +89,10 @@ def _19(state: _18):
                 q_multi.setdefault(k, []).append(v)
             req_body = _13(raw, self.headers.get("content-type", ""))
 
-            if err_inj and random.random() < float(err_inj.get("rate", 1.0)):
+            # Deliberately a non-cryptographic generator: error injection is
+            # a testing feature that wants to be seeded and reproducible, not
+            # unpredictable.
+            if err_inj and random.random() < float(err_inj.get("rate", 1.0)):  # noqa: S311
                 st = int(err_inj.get("status", 500))
                 body = err_inj.get("body") or {"error": "injected", "status": st}
                 metrics._06(upstream, st, "inject")
