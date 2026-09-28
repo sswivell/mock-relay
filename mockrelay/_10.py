@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterator, Optional
 
 from ._06 import _01 as _01
 from ._06 import _06 as _02
+from .security import ensure_writable_dir, safe_child, validate_component
 
 
 def _03(upstream: str, match: _01) -> str:
@@ -35,9 +36,10 @@ class _04:
         self.root.mkdir(parents=True, exist_ok=True)
 
     def _05(self, upstream: str, fixture_id: str) -> Path:
-        d = self.root / upstream
-        d.mkdir(parents=True, exist_ok=True)
-        return d / f"{fixture_id}.json"
+        target = safe_child(self.root, str(upstream), f"{fixture_id}.json")
+        validate_component(fixture_id, "fixture id")
+        ensure_writable_dir(target.parent, "fixture directory")
+        return target
 
     def _06(self, upstream: str, fixture: _02) -> Path:
         p = self._05(upstream, fixture.id)
@@ -49,7 +51,7 @@ class _04:
         return p
 
     def _07(self, upstream: Optional[str] = None) -> Iterator[_02]:
-        search = self.root / upstream if upstream else self.root
+        search = safe_child(self.root, str(upstream)) if upstream else self.root
         if not search.exists():
             return
         for path in sorted(search.rglob("*.json")):
