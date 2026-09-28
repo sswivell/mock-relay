@@ -37,15 +37,31 @@ async function refresh(){
   mode.textContent = s.mode; lat.textContent = s.latency_ms;
   hits.textContent = s.hits; miss.textContent = s.misses; rec.textContent = s.recorded;
   const r = await (await fetch('/api/recent')).json();
-  const rb = document.querySelector('#recent tbody'); rb.innerHTML='';
-  for (const x of r){ const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${x.t}</td><td>${x.m}</td><td>${x.p}</td><td>${x.s}</td><td>${x.mode}</td>`;
-    rb.appendChild(tr);}
+  const rb = document.querySelector('#recent tbody'); rb.replaceChildren();
+    for (const x of r){
+      const tr=document.createElement('tr');
+      for (const v of [x.t, x.m, x.p, x.s, x.mode]) {
+        const td = document.createElement('td');
+        // textContent, never a markup assignment: a recorded path is
+        // attacker-supplied data, and interpolating it into markup would
+        // execute on every dashboard load for whoever has the admin port
+        // open. tests/test_admin_dashboard_xss.py enforces this.
+        td.textContent = v; tr.appendChild(td);
+      }
+      rb.appendChild(tr);}
   const fx = await (await fetch('/api/fixtures')).json();
-  const tb = document.querySelector('#fx tbody'); tb.innerHTML = '';
-  for (const f of fx){ const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${f.upstream}</td><td><code>${f.id}</code></td>
-      <td>${f.match.method}</td><td>${f.match.path}</td><td>${f.response.status}</td>`;
+  const tb = document.querySelector('#fx tbody'); tb.replaceChildren();
+  for (const f of fx){
+    const tr = document.createElement('tr');
+    const cells = [f.upstream, null, f.match && f.match.method,
+                   f.match && f.match.path,
+                   f.response && f.response.status];
+    cells.forEach((v, i) => {
+      const td = document.createElement('td');
+      if (i === 1) { const c = document.createElement('code'); c.textContent = f.id; td.appendChild(c); }
+      else { td.textContent = v; }
+      tr.appendChild(td);
+    });
     tb.appendChild(tr);}
 }
 refresh(); setInterval(refresh, 2000);
