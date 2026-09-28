@@ -96,8 +96,8 @@ def test_12_loopback_detection_is_conservative():
     for good in ("127.0.0.1", "127.5.5.5", "::1", "localhost",
                  "LOCALHOST", " 127.0.0.1 ", "[::1]"):
         assert is_loopback(good) is True, good
-    for bad in ("0.0.0.0", "example.com", "127.0.0.1.example.com",
-                "10.0.0.1", "::"):
+    for bad in ("0.0.0.0",  # noqa: S104 - asserting this is rejected
+                "example.com", "127.0.0.1.example.com", "10.0.0.1", "::"):
         assert is_loopback(bad) is False, bad
 
 
@@ -181,7 +181,7 @@ def test_25_safe_child_refuses_a_symlink_that_points_outside(tmp_path):
     root.mkdir()
     link = root / "escape"
     try:
-        os.symlink(outside, link, target_is_directory=True)
+        link.symlink_to(outside, target_is_directory=True)
     except (OSError, NotImplementedError, AttributeError):
         pytest.skip("symlinks are not available to this user")
     with pytest.raises(SecurityError):
@@ -192,7 +192,7 @@ def test_26_safe_child_allows_a_symlink_that_stays_inside(tmp_path):
     root = tmp_path / "fixtures"
     (root / "real").mkdir(parents=True)
     try:
-        os.symlink(root / "real", root / "alias", target_is_directory=True)
+        (root / "alias").symlink_to(root / "real", target_is_directory=True)
     except (OSError, NotImplementedError, AttributeError):
         pytest.skip("symlinks are not available to this user")
     got = safe_child(root, "alias", "f.json")
