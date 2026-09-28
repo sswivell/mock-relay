@@ -1,6 +1,8 @@
 """Proxy handler and server: request routing, record/replay dispatch, 502 handling."""
 from __future__ import annotations
+
 import http.server
+import json
 import random
 import socketserver
 import threading
@@ -15,18 +17,19 @@ from ._06 import _06 as _05
 from ._07 import _05 as _06
 from ._07 import _07 as _07
 from ._08 import _02 as _08
-from ._09 import _21 as _33
-from ._09 import _22 as _32
-from ._09 import _29 as _34
-from ._09 import _25 as _35
 from ._09 import _05 as _09
 from ._09 import _06 as _10
+from ._09 import _21 as _33
+from ._09 import _22 as _32
+from ._09 import _25 as _35
+from ._09 import _29 as _34
 from ._11 import _01 as _12
 from ._12 import _02 as _13
 from ._12 import _03 as _14
 from ._12 import _04 as _15
 from ._12 import _05 as _16
 from ._12 import _06 as _17
+from .errors import LimitExceeded, MockRelayError, SecurityError
 
 
 class _18:
@@ -50,6 +53,16 @@ def _19(state: _18):
             return
 
         def _21(self):
+            try:
+                return self._31()
+            except SecurityError as e:
+                return self._26(400, {"error": str(e)})
+            except LimitExceeded as e:
+                return self._26(e.status, {"error": str(e)})
+            except MockRelayError as e:
+                return self._26(500, {"error": e.message or e.kind})
+
+        def _31(self):
             raw_target = urlparse(self.path)
             parts = raw_target.path.lstrip("/").split("/", 1)
             if not parts or not parts[0]:
@@ -159,7 +172,7 @@ def _19(state: _18):
             self._28(st, rbody, hdrs)
 
         def _26(self, status: int, body_dict: Any):
-            self._28(status, __import__("json").dumps(body_dict).encode(),
+            self._28(status, json.dumps(body_dict).encode(),
                      {"Content-Type": "application/json"})
 
         def _27(self, rec, fid: str = "", info: Optional[Dict[str, Any]] = None):
