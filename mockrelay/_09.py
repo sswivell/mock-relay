@@ -199,17 +199,14 @@ def _14(e: Any, a: Any, opts: _07 | None = None,
             return all(_18(k, e[k], a, o, mode) for k in e)
         if not isinstance(a, dict):
             return False
-        for k, v in e.items():
-            if not _15(k, v, a, o, mode):
-                return False
-        return True
+        return all(_15(k, v, a, o, mode) for k, v in e.items())
     if isinstance(e, (list, tuple)):
         if not isinstance(a, (list, tuple)):
             return False
         if all(not isinstance(x, (dict, list, tuple)) for x in e):
             if len(e) != len(a):
                 return False
-            return all(_13(x, y, o, mode) for x, y in zip(e, a))
+            return all(_13(x, y, o, mode) for x, y in zip(e, a, strict=True))
         return all(any(_13(x, y, o, mode) for y in a) for x in e)
     return _13(e, a, o, mode)
 
