@@ -30,7 +30,7 @@ from ._12 import _03 as _14
 from ._12 import _04 as _15
 from ._12 import _05 as _16
 from ._12 import _06 as _17
-from .errors import LimitExceeded, MockRelayError, SecurityError
+from .errors import FramingError, LimitExceeded, MockRelayError, SecurityError
 from .security import check_request_framing
 
 
@@ -67,6 +67,25 @@ def _19(state: _18):
         def _21(self):
             try:
                 return self._31()
+            except FramingError as e:
+                # Raised before the body was read, so the socket still
+                # holds whatever the client claimed was the body. The next
+                # keep-alive read would start in the middle of it and the
+                # client would get to choose what that request is. Close
+                # instead of guessing; this is the one refusal that costs
+                # us the connection.
+                #
+                # The close is only safe if the socket buffer is empty
+                # first. Closing a socket with unread data queued makes the
+                # OS send an RST, and an RST discards the 400 we just
+                # wrote -- the client would see a connection error instead
+                # of the explanation for why we refused it. So drain
+                # first, bounded by the same body limit every other read
+                # obeys, and only then close.
+                self.close_connection = True
+                self._32()
+                return self._26(400, {"error": e.message, "type": e.code},
+                                close=True)
             except SecurityError as e:
                 return self._26(400, {"error": e.message, "type": e.code})
             except LimitExceeded as e:
@@ -74,6 +93,50 @@ def _19(state: _18):
             except MockRelayError as e:
                 return self._26(500, {"error": e.message or e.kind,
                                       "type": e.code})
+
+        def _32(self, budget: int | None = None):
+            """Discard whatever is still queued for a request we refused.
+
+            Only used on the framing-refusal path, where the declared body
+            length is precisely what we cannot trust. Reads at most
+            ``max_request_body`` and stops at the first moment the socket
+            has nothing more, which is the normal case: the client sent a
+            body and is waiting for our answer.
+
+            If the budget runs out first, the caller closes anyway and the
+            client sees a reset. That is the correct outcome -- we have
+            more unread body than we are willing to buffer on behalf of a
+            request we already refused -- but it is worth knowing it
+            happened, so the shortfall is returned.
+            """
+            cap = budget if budget is not None else getattr(
+                state.cfg, "max_request_body", 10 * 1024 * 1024
+            )
+            if not hasattr(self, "connection") or self.connection is None:
+                return 0
+            sock = self.connection
+            try:
+                previous = sock.gettimeout()
+            except OSError:  # pragma: no cover - already torn down
+                return 0
+            drained = 0
+            try:
+                # A short timeout is the "nothing more is coming right now"
+                # signal, and is only ever this short on a connection we
+                # are about to close.
+                sock.settimeout(0.25)
+                while drained < cap:
+                    try:
+                        chunk = self.rfile.read1(65536)
+                    except (TimeoutError, OSError):
+                        break
+                    if not chunk:
+                        break
+                    drained += len(chunk)
+            finally:
+                with contextlib.suppress(OSError):
+                    sock.settimeout(previous)
+            return drained
 
         def _31(self):
             raw_target = urlparse(self.path)
@@ -186,9 +249,9 @@ def _19(state: _18):
             metrics._07(method, norm_path, st, mode)
             self._28(st, rbody, hdrs)
 
-        def _26(self, status: int, body_dict: Any):
+        def _26(self, status: int, body_dict: Any, close: bool = False):
             self._28(status, json.dumps(body_dict).encode(),
-                     {"Content-Type": "application/json"})
+                     {"Content-Type": "application/json"}, close=close)
 
         def _27(self, rec, fid: str = "", info: dict[str, Any] | None = None):
             hdrs = {k: v for k, v in rec.headers.items() if k.lower() not in _15}
@@ -200,12 +263,20 @@ def _19(state: _18):
                     hdrs["X-MockRelay-Priority"] = str(info["priority"])
             self._28(rec.status, _14(rec.body), hdrs)
 
-        def _28(self, status: int, body: bytes, headers: dict[str, str]):
+        def _28(self, status: int, body: bytes, headers: dict[str, str],
+                 close: bool = False):
             self.send_response(status)
             for k, v in headers.items():
                 if k.lower() in _15:
                     continue
                 self.send_header(k, v)
+            if close:
+                # Spelled out rather than left to BaseHTTPRequestHandler,
+                # because it is easy to forget that send_response only
+                # *emits* the header here -- the default is applied later,
+                # from self.close_connection, after the caller has had
+                # every chance to clear it.
+                self.send_header("Connection", "close")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             if self.command != "HEAD":

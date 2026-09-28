@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from .errors import ConfigError, Problem, SecurityError
+from .errors import ConfigError, FramingError, Problem, SecurityError
 
 __all__ = [
     "DEFAULT_HOST",
@@ -344,9 +344,7 @@ def safe_repr(value: object, limit: int = 32) -> str:
     return clipped.encode("ascii", "backslashreplace").decode("ascii")
 
 
-def parse_content_length_fields(
-    values: object, *, max_digits: int = 18
-) -> int:
+def parse_content_length_fields(values: object, *, max_digits: int = 18) -> int:
     """Resolve every ``Content-Length`` a request carries into one length.
 
     ``http.server`` exposes repeated headers through ``get_all``, and
@@ -373,20 +371,23 @@ def parse_content_length_fields(
             try:
                 value = value.decode("latin-1")
             except UnicodeDecodeError:  # pragma: no cover - defensive
-                raise SecurityError("Content-Length must be ASCII digits") from None
+                raise FramingError("Content-Length must be ASCII digits") from None
         text = str(value)
         # A comma list is a #rule in RFC 7230 section 7, which permits
         # optional whitespace around the separators. Strip that here, and
         # nowhere else: a lone field value with stray whitespace is a
         # different question, and the header parser has already answered it.
         for part in (p.strip(" \t") for p in text.split(",")):
-            parsed.append(parse_content_length(part, max_digits=max_digits))
+            try:
+                parsed.append(parse_content_length(part, max_digits=max_digits))
+            except SecurityError as e:
+                raise FramingError(e.message) from e
     if not parsed:
         return 0
     first = parsed[0]
     for other in parsed[1:]:
         if other != first:
-            raise SecurityError(
+            raise FramingError(
                 "request declares conflicting Content-Length values; "
                 "message framing is ambiguous"
             )
@@ -401,8 +402,13 @@ def check_request_framing(headers: object) -> int:
     alongside it. ``Transfer-Encoding`` is not implemented and is never
     going to be, so the honest answer is to refuse rather than to read a
     zero-length body and let the chunks become a second request.
+
+    Everything here raises ``FramingError`` rather than ``SecurityError``.
+    The difference is what the server does next: a framing refusal means
+    the body was never read, so the connection has to be closed, whereas
+    a security refusal after a successful read leaves the connection
+    perfectly usable.
     """
-    from .errors import SecurityError
 
     def all_of(name: str) -> list[str]:
         getter = getattr(headers, "get_all", None)
@@ -413,9 +419,9 @@ def check_request_framing(headers: object) -> int:
 
     encodings = all_of("Transfer-Encoding")
     if encodings:
-        raise SecurityError(
+        raise FramingError(
             "Transfer-Encoding is not supported; MockRelay requires a "
-            f"Content-Length (got {safe_repr(encodings)!r})"
+            f"Content-Length (got {safe_repr(encodings)})"
         )
     return parse_content_length_fields(all_of("Content-Length"))
 

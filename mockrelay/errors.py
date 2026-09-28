@@ -23,6 +23,7 @@ __all__ = [
     "ExitCode",
     "FixtureError",
     "FixtureSchemaError",
+    "FramingError",
     "LimitExceeded",
     "MockRelayError",
     "Problem",
@@ -228,6 +229,19 @@ class StoreError(FixtureError):
 class SecurityError(MockRelayError):
     kind = "Refused for security reasons"
     code = "security"
+
+
+class FramingError(SecurityError):
+    """The request says something incoherent about where its body ends.
+
+    Distinct from a plain SecurityError because it is the one refusal the
+    server cannot recover a connection from: the body was never read, so
+    those bytes are still in the socket and the next keep-alive read would
+    start in the middle of them. The connection has to be closed.
+    """
+
+    kind = "Malformed request"
+    code = "malformed_request"
 
 
 class UpstreamError(MockRelayError):
