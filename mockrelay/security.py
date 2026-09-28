@@ -1,0 +1,385 @@
+"""Filesystem, network, and header safety primitives.
+
+Everything that turns user-controlled or operator-controlled text into a path,
+a socket address, or an outgoing header goes through this module.
+"""
+
+from __future__ import annotations
+
+import ipaddress
+import os
+import re
+from collections.abc import Sequence
+from dataclasses import dataclass
+from pathlib import Path
+
+from .errors import ConfigError, Problem, SecurityError
+
+__all__ = [
+    "DEFAULT_HOST",
+    "DEFAULT_PORT",
+    "HOP_BY_HOP_HEADERS",
+    "LOOPBACK_HOST_NAMES",
+    "ListenAddress",
+    "ensure_writable_dir",
+    "is_loopback",
+    "is_valid_header_name",
+    "is_valid_header_value",
+    "is_within",
+    "parse_listen",
+    "render_listen",
+    "safe_child",
+    "sanitize_headers",
+    "temporary_free_mb",
+    "validate_component",
+]
+
+DEFAULT_HOST = "127.0.0.1"
+DEFAULT_PORT = 8080
+
+LOOPBACK_HOST_NAMES = frozenset(
+    (
+        "localhost",
+        "localhost.localdomain",
+        "ip6-localhost",
+        "ip6-loopback",
+    )
+)
+
+HOP_BY_HOP_HEADERS = frozenset(
+    (
+        "connection",
+        "keep-alive",
+        "proxy-authenticate",
+        "proxy-authorization",
+        "te",
+        "trailer",
+        "trailers",
+        "transfer-encoding",
+        "upgrade",
+        "host",
+        "content-length",
+        "proxy-connection",
+    )
+)
+
+_HEADER_NAME_RE = re.compile(r"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$")
+_BAD_COMPONENT_RE = re.compile(r"[\x00-\x1f\x7f<>:\"|?*\\/]")
+_WINDOWS_RESERVED = frozenset(
+    (
+        "con",
+        "prn",
+        "aux",
+        "nul",
+        *(f"com{i}" for i in range(1, 10)),
+        *(f"lpt{i}" for i in range(1, 10)),
+    )
+)
+MAX_COMPONENT_LEN = 128
+MAX_LISTEN_LEN = 300
+
+
+def is_valid_header_name(name: str) -> bool:
+    return bool(name) and len(name) <= 256 and bool(_HEADER_NAME_RE.match(name))
+
+
+def is_valid_header_value(value: object) -> bool:
+    if not isinstance(value, str):
+        return True
+    if len(value) > 16384:
+        return False
+    return not any(ch in value for ch in ("\r", "\n", "\x00"))
+
+
+def is_loopback(host: str) -> bool:
+    """True only for addresses that cannot leave this machine.
+
+    A hostname that is not a known loopback name is treated as non-loopback,
+    so an unresolvable or spoofed name never counts as safe.
+    """
+    name = (host or "").strip().strip("[]").lower()
+    if not name:
+        return True
+    if name in LOOPBACK_HOST_NAMES:
+        return True
+    try:
+        return ipaddress.ip_address(name).is_loopback
+    except ValueError:
+        return False
+
+
+@dataclass(frozen=True)
+class ListenAddress:
+    host: str
+    port: int
+    spec: str = ""
+
+    @property
+    def loopback(self) -> bool:
+        return is_loopback(self.host)
+
+    @property
+    def public(self) -> bool:
+        return not self.loopback
+
+    def render(self) -> str:
+        return render_listen(self.host, self.port)
+
+
+def render_listen(host: str, port: int) -> str:
+    if ":" in host and not host.startswith("["):
+        return f"[{host}]:{port}"
+    return f"{host}:{port}"
+
+
+def parse_listen(
+    spec: object, default_port: int = DEFAULT_PORT, what: str = "listen"
+) -> ListenAddress:
+    """Parse ``host:port``, ``:port``, ``port``, or ``[v6]:port``."""
+    problems: list[Problem] = []
+    raw = str(spec if spec is not None else "").strip()
+    if not raw:
+        raw = render_listen(DEFAULT_HOST, default_port)
+    if len(raw) > MAX_LISTEN_LEN:
+        raise ConfigError(
+            [Problem(f"`{what}` is longer than {MAX_LISTEN_LEN} characters")],
+            hint="Use a short address such as 127.0.0.1:8080.",
+        )
+    host = ""
+    port_text = ""
+    if raw.startswith("["):
+        end = raw.find("]")
+        if end == -1:
+            problems.append(
+                Problem(
+                    "unbalanced brackets in an IPv6 address",
+                    subject=f"`{what}`",
+                    expected="[::1]:8080",
+                    location=raw,
+                )
+            )
+        else:
+            host = raw[1:end]
+            rest = raw[end + 1 :]
+            if rest.startswith(":"):
+                port_text = rest[1:]
+            elif rest:
+                problems.append(
+                    Problem(
+                        "unexpected characters after the IPv6 address",
+                        subject=f"`{what}`",
+                        expected="[::1]:8080",
+                        location=raw,
+                    )
+                )
+    elif raw.count(":") > 1:
+        host = raw
+    elif ":" in raw:
+        host, _, port_text = raw.partition(":")
+    elif raw.isdigit():
+        port_text = raw
+    else:
+        host = raw
+    host = host.strip().strip("[]")
+    port = default_port
+    if port_text.strip():
+        text = port_text.strip()
+        if not text.isdigit():
+            problems.append(
+                Problem(
+                    "port is not a number",
+                    subject=f"`{what}`",
+                    expected="0-65535",
+                    location=raw,
+                )
+            )
+        else:
+            port = int(text)
+            if not 0 <= port <= 65535:
+                problems.append(
+                    Problem(
+                        f"port {port} is out of range",
+                        subject=f"`{what}`",
+                        expected="0-65535",
+                        location=raw,
+                    )
+                )
+    if not host:
+        host = DEFAULT_HOST
+    if any(ch.isspace() or ord(ch) < 32 or ord(ch) == 127 for ch in host):
+        problems.append(
+            Problem(
+                "host contains whitespace or control characters",
+                subject=f"`{what}`",
+                expected="127.0.0.1",
+                location=raw,
+            )
+        )
+    elif len(host) > 253:
+        problems.append(
+            Problem(
+                "host is longer than 253 characters",
+                subject=f"`{what}`",
+                expected="127.0.0.1",
+                location=raw,
+            )
+        )
+    elif not _is_plausible_host(host):
+        problems.append(
+            Problem(
+                "host is not a valid hostname or IP address",
+                subject=f"`{what}`",
+                expected="127.0.0.1 or localhost",
+                location=raw,
+            )
+        )
+    if problems:
+        raise ConfigError(problems, hint="Use `host:port`, for example 127.0.0.1:8080.")
+    return ListenAddress(host=host, port=port, spec=raw)
+
+
+_HOSTNAME_RE = re.compile(
+    r"^(?=.{1,253}$)[A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}"
+    r"[A-Za-z0-9_])?(?:\.[A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}"
+    r"[A-Za-z0-9_])?)*\.?$"
+)
+
+
+def _is_plausible_host(host: str) -> bool:
+    if not host:
+        return False
+    try:
+        ipaddress.ip_address(host)
+        return True
+    except ValueError:
+        pass
+    if host.endswith("."):
+        host = host[:-1]
+    return bool(_HOSTNAME_RE.match(host))
+
+
+def validate_component(value: object, kind: str = "name") -> str:
+    """Return ``value`` if it is safe to use as one path component."""
+    text = str(value if value is not None else "")
+    if not text:
+        raise SecurityError(f"empty {kind} is not allowed")
+    if text in (".", ".."):
+        raise SecurityError(f"{kind} {text!r} is not allowed")
+    if len(text) > MAX_COMPONENT_LEN:
+        raise SecurityError(f"{kind} is longer than {MAX_COMPONENT_LEN} characters")
+    if text.startswith("."):
+        raise SecurityError(f"{kind} may not start with a dot: {text!r}")
+    bad = _BAD_COMPONENT_RE.search(text)
+    if bad:
+        raise SecurityError(
+            f"{kind} contains an illegal character ({bad.group(0)!r}): {text!r}"
+        )
+    if any(ord(ch) < 32 or ord(ch) == 127 for ch in text):
+        raise SecurityError(f"{kind} contains a control character: {text!r}")
+    if text != text.strip() or text.endswith("."):
+        raise SecurityError(
+            f"{kind} may not have leading or trailing whitespace or a "
+            f"trailing dot: {text!r}"
+        )
+    stem = text.split(".")[0].lower()
+    if stem in _WINDOWS_RESERVED:
+        raise SecurityError(f"{kind} {text!r} is a reserved device name on Windows")
+    return text
+
+
+def _norm(path: Path) -> str:
+    """Canonical, symlink-resolved form of ``path`` for containment checks.
+
+    ``resolve()`` matters here: a symlink inside the root would otherwise let a
+    child escape while every textual component still looks safe.
+    """
+    return os.path.normcase(str(Path(path).resolve()))
+
+
+def is_within(root: Path, child: Path) -> bool:
+    base = _norm(root)
+    target = _norm(child)
+    return target == base or target.startswith(base + os.sep)
+
+
+def safe_child(root: Path, *parts: str) -> Path:
+    """Join ``parts`` under ``root`` and refuse anything that escapes it.
+
+    Resolution is done with ``realpath`` so a symlink inside the root cannot
+    be used to read or write outside it.
+    """
+    base = Path(os.path.realpath(str(root)))
+    if not parts:
+        return base
+    checked = [validate_component(p, "path segment") for p in parts]
+    candidate = base.joinpath(*checked)
+    real = Path(os.path.realpath(str(candidate)))
+    if not is_within(base, real):
+        raise SecurityError(
+            f"refusing to use {str(candidate)!r}: it resolves outside {str(base)!r}"
+        )
+    return candidate
+
+
+def sanitize_headers(
+    pairs: Sequence[tuple[str, object]],
+    max_headers: int = 100,
+    max_total_bytes: int = 65536,
+    drop_hop_by_hop: bool = True,
+) -> tuple[list[tuple[str, str]], list[str]]:
+    """Drop headers that cannot be sent safely, and enforce size limits.
+
+    Returns the surviving pairs and a list of human-readable reasons. Reasons
+    never include header values, because values may be credentials.
+    """
+    kept: list[tuple[str, str]] = []
+    dropped: list[str] = []
+    total = 0
+    for name, value in pairs:
+        key = str(name)
+        if not is_valid_header_name(key):
+            dropped.append(f"invalid header name {key!r}")
+            continue
+        if not is_valid_header_value(value):
+            dropped.append(f"header {key} has an illegal value")
+            continue
+        if drop_hop_by_hop and key.lower() in HOP_BY_HOP_HEADERS:
+            dropped.append(f"hop-by-hop header {key}")
+            continue
+        total += len(key) + len(str(value)) + 4
+        if total > max_total_bytes:
+            dropped.append("header block exceeds the configured limit")
+            break
+        if len(kept) >= max_headers:
+            dropped.append("too many headers")
+            break
+        kept.append((key, str(value)))
+    return kept, dropped
+
+
+def ensure_writable_dir(path: Path, what: str = "directory") -> None:
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise ConfigError(
+            [
+                Problem(
+                    f"cannot create the {what}: {exc.strerror or exc}",
+                    location=str(path),
+                )
+            ],
+            hint=f"Create it manually, or point {what} somewhere writable.",
+        ) from exc
+    if not os.access(str(path), os.W_OK | os.X_OK):
+        raise ConfigError(
+            [Problem(f"the {what} is not writable", location=str(path))],
+            hint="Fix the permissions, or point the setting elsewhere.",
+        )
+
+
+def temporary_free_mb(path: Path) -> int | None:
+    try:
+        usage = os.statvfs(str(path))
+    except (AttributeError, OSError):
+        return None
+    return int(usage.f_bavail * usage.f_frsize / (1024 * 1024))
