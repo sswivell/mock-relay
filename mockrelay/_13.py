@@ -31,6 +31,17 @@ from ._12 import _04 as _15
 from ._12 import _05 as _16
 from ._12 import _06 as _17
 from .errors import LimitExceeded, MockRelayError, SecurityError
+from .security import parse_content_length
+
+
+def _read_body(handler) -> bytes:
+    """Read the declared request body, refusing a length we cannot honour.
+
+    Kept out of the handler so the framing rules are testable without a
+    socket, and so the admin server can share them.
+    """
+    length = parse_content_length(handler.headers.get("Content-Length"))
+    return handler.rfile.read(length) if length else b""
 
 
 class _18:
@@ -82,8 +93,7 @@ def _19(state: _18):
             method = self.command
             opts = _34(cfg._12(upstream, norm_path))
 
-            cl = int(self.headers.get("Content-Length", 0) or 0)
-            raw = self.rfile.read(cl) if cl else b""
+            raw = _read_body(self)
 
             q_multi: dict[str, list[str]] = {}
             for k, v in parse_qsl(raw_target.query, keep_blank_values=True):

@@ -26,6 +26,13 @@ from mockrelay._13 import _18 as State
 from mockrelay._13 import _30 as start
 
 # Non-numeric forms, all of which raised ValueError from int().
+#
+# Note what is absent. Optional whitespace is not here: RFC 7230 strips it
+# from a field value, so " 5" arrives at the handler as "5" and is legal.
+# Nor is a non-ASCII digit: HTTP/1.1 header values are latin-1, so the
+# client cannot put one on the wire at all. Both are covered at the parser
+# level in tests/test_content_length_parsing.py, which is where they
+# belong.
 MALFORMED = [
     "abc",
     "1e3",
@@ -33,11 +40,9 @@ MALFORMED = [
     "5.0",
     "5, 5",
     "-1",
+    "-0",
     "+5",
     "1_000",
-    "5 ",
-    " 5",
-    "５",
     "",
 ]
 

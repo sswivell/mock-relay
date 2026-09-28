@@ -14,6 +14,7 @@ lenient regression is visible.
 
 import pytest
 
+from mockrelay.errors import SecurityError
 from mockrelay.security import parse_content_length
 
 # Values HTTP permits: a run of decimal digits.
@@ -28,6 +29,8 @@ VALID = [
 ]
 
 # Values HTTP does not permit. Each is a case where leniency is a bug.
+# Escapes are used for the non-ASCII cases so the file stays readable and
+# so a source encoding change cannot silently alter what is under test.
 INVALID = [
     "",            # present but empty
     " ",           # whitespace only
@@ -48,7 +51,7 @@ INVALID = [
     "5\r\n",
     "0b101",
     "0o17",
-    "５",           # fullwidth digit: int() accepts it
+    "\uff15",      # fullwidth digit five: int() accepts it
     "1_000",       # underscore separators: int() accepts it
 ]
 
@@ -60,8 +63,6 @@ def test_01_legal_values_parse_to_the_declared_length(raw, expected):
 
 @pytest.mark.parametrize("raw", INVALID)
 def test_02_illegal_values_are_refused(raw):
-    from mockrelay.errors import SecurityError
-
     with pytest.raises(SecurityError) as e:
         parse_content_length(raw)
     assert "Content-Length" in str(e.value)
@@ -70,7 +71,7 @@ def test_02_illegal_values_are_refused(raw):
 def test_03_absent_is_zero_and_distinguishable_from_present_but_empty():
     """`None` means no header; `""` means a header with no value."""
     assert parse_content_length(None) == 0
-    with pytest.raises(Exception):
+    with pytest.raises(SecurityError):
         parse_content_length("")
 
 
@@ -81,8 +82,6 @@ def test_04_leading_zeros_do_not_change_the_value():
 
 def test_05_a_very_long_digit_run_is_refused_rather_than_truncated():
     """No legitimate body is 100 digits long; a DoS probe often is."""
-    from mockrelay.errors import SecurityError
-
     with pytest.raises(SecurityError):
         parse_content_length("1" * 100)
     assert parse_content_length("1" * 18) == int("1" * 18)
@@ -92,13 +91,13 @@ def test_06_the_value_is_not_accepted_as_bool_or_int_by_accident():
     """The parser takes the raw header string, not a pre-coerced value."""
     assert parse_content_length(5) == 5
     assert parse_content_length(b"5") == 5
+    with pytest.raises(SecurityError):
+        parse_content_length(True)
 
 
 def test_07_only_digits_are_ever_accepted():
     """Whitelist, not blacklist: a new character class cannot slip in."""
     import string
-
-    from mockrelay.errors import SecurityError
 
     for ch in string.printable:
         if ch in string.digits:
