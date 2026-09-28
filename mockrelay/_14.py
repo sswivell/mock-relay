@@ -1,6 +1,7 @@
 """Admin HTTP server: JSON API endpoints, match probing and fixture management."""
 from __future__ import annotations
 
+import functools
 import http.server
 import json
 import threading
@@ -11,6 +12,7 @@ from ._09 import _29 as _12
 from ._12 import _06 as _03
 from ._13 import _18 as _01
 from ._13 import _29 as _02
+from .errors import LimitExceeded, MockRelayError, SecurityError
 
 _04 = """<!doctype html><html><head><title>MockRelay</title>
 <style>
@@ -50,6 +52,38 @@ refresh(); setInterval(refresh, 2000);
 </script></body></html>"""
 
 
+def _18(fn):
+    """Drain the request body, then map MockRelay errors onto statuses.
+
+    Without this a traversal attempt in the upstream segment reaches the
+    store, raises SecurityError, and escapes through
+    BaseHTTPRequestHandler as a 500 with a traceback on stderr and a
+    dropped connection.
+    """
+
+    @functools.wraps(fn)
+    def _19(self):
+        self._15()
+        try:
+            return fn(self)
+        except MockRelayError as e:
+            # `code` is the stable token; `kind` is a phrase meant for
+            # people and may be reworded without warning.
+            if isinstance(e, SecurityError):
+                status = 400
+            elif isinstance(e, LimitExceeded):
+                status = e.status
+            else:
+                status = 500
+            return self._07(status, {
+                "error": e.message or e.kind,
+                "type": e.code,
+                "kind": e.kind,
+            })
+
+    return _19
+
+
 def _05(state: _01):
     cfg = state.cfg
     store = state.store
@@ -84,6 +118,30 @@ def _05(state: _01):
             self.end_headers()
             self.wfile.write(body)
 
+        def _15(self):
+            """Consume any unread request body.
+
+            No admin route reads one, but HTTP/1.1 keep-alive means the
+            next request on the connection is read from wherever the
+            last one stopped. Leaving bytes in rfile makes the following
+            request start mid-body and fail to parse.
+            """
+            try:
+                remaining = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                return
+            if remaining <= 0:
+                return
+            limit = int(getattr(cfg, "max_body_bytes", 0) or 0) or 1 << 20
+            remaining = min(remaining, limit)
+            while remaining > 0:
+                chunk = self.rfile.read(min(remaining, 65536))
+                if not chunk:
+                    break
+                remaining -= len(chunk)
+
+
+        @_18
         def do_GET(self):
             if self.path in ("/", "/index.html"):
                 return self._08(_04)
@@ -138,6 +196,7 @@ def _05(state: _01):
                 return self._07(200, out)
             return self._07(404, {"error": "not found"})
 
+        @_18
         def do_POST(self):
             p = urlparse(self.path).path
             parts = p.strip("/").split("/")
@@ -155,6 +214,7 @@ def _05(state: _01):
                 return self._07(200, {"latency_ms": cfg.latency_ms})
             return self._07(404, {"error": "not found"})
 
+        @_18
         def do_DELETE(self):
             p = urlparse(self.path).path
             parts = p.strip("/").split("/")

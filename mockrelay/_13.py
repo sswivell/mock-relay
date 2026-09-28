@@ -57,11 +57,12 @@ def _19(state: _18):
             try:
                 return self._31()
             except SecurityError as e:
-                return self._26(400, {"error": str(e)})
+                return self._26(400, {"error": e.message, "type": e.code})
             except LimitExceeded as e:
-                return self._26(e.status, {"error": str(e)})
+                return self._26(e.status, {"error": e.message, "type": e.code})
             except MockRelayError as e:
-                return self._26(500, {"error": e.message or e.kind})
+                return self._26(500, {"error": e.message or e.kind,
+                                      "type": e.code})
 
         def _31(self):
             raw_target = urlparse(self.path)
