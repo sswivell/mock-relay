@@ -138,6 +138,9 @@ class MockRelayError(Exception):
 
     exit_code: ExitCode = EXIT_ERROR
     kind = "Error"
+    #: Stable machine-readable token, safe to switch on in a client.
+    #: Unlike `kind`, which is a human-readable phrase and may be reworded.
+    code = "error"
 
     def __init__(
         self,
@@ -167,6 +170,7 @@ class MockRelayError(Exception):
 class ConfigError(MockRelayError):
     exit_code = EXIT_CONFIG
     kind = "Configuration error"
+    code = "config"
 
     def __init__(
         self,
@@ -191,14 +195,17 @@ class ConfigError(MockRelayError):
 
 class ConfigLoadError(ConfigError):
     kind = "Configuration error"
+    code = "config_load"
 
 
 class FixtureError(MockRelayError):
     kind = "Fixture error"
+    code = "fixture"
 
 
 class FixtureSchemaError(FixtureError):
     kind = "Invalid fixture"
+    code = "fixture_schema"
 
     def __init__(
         self, problems: Iterable[Problem], source: str = "", hint: str = ""
@@ -215,18 +222,22 @@ class FixtureSchemaError(FixtureError):
 
 class StoreError(FixtureError):
     kind = "Fixture store error"
+    code = "store"
 
 
 class SecurityError(MockRelayError):
     kind = "Refused for security reasons"
+    code = "security"
 
 
 class UpstreamError(MockRelayError):
     kind = "Upstream request failed"
+    code = "upstream"
 
 
 class LimitExceeded(MockRelayError):
     kind = "Limit exceeded"
+    code = "limit"
     status = 413
 
     def __init__(
@@ -239,6 +250,7 @@ class LimitExceeded(MockRelayError):
 class ValidationFailed(MockRelayError):
     exit_code = EXIT_VALIDATION
     kind = "Validation failed"
+    code = "validation"
 
     def __init__(
         self, problems: Iterable[Problem], source: str = "", hint: str = ""
@@ -257,6 +269,7 @@ class ValidationFailed(MockRelayError):
 class DoctorFailed(MockRelayError):
     exit_code = EXIT_DOCTOR
     kind = "Environment check failed"
+    code = "doctor"
 
     def __init__(
         self, problems: Iterable[Problem], source: str = "", hint: str = ""
