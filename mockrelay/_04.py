@@ -94,9 +94,9 @@ def _15(label: str, width: int | None = None, theme: str | None = None) -> None:
     if not _01.view:
         return
     w = width or int(_01.width)
-    l = f" {label} "
-    side = max(0, (w - len(l)) // 2)
-    print(_05("\u2500" * side + l + "\u2500" * (w - side - len(l)), theme))
+    caption = f" {label} "
+    side = max(0, (w - len(caption)) // 2)
+    print(_05("\u2500" * side + caption + "\u2500" * (w - side - len(caption)), theme))
 
 
 def _16(key, value, key_width: int = 16, theme: str | None = None,
@@ -141,8 +141,8 @@ def _19(content: str, title: str | None = None, width: int | None = None,
     if not _01.view:
         return
     lines = content.splitlines() or [""]
-    inner = width or max(int(_01.width), max(_10(l) for l in lines) + 4)
-    inner = max(inner, max(_10(l) for l in lines) + 2)
+    inner = width or max(int(_01.width), max(_10(line) for line in lines) + 4)
+    inner = max(inner, max(_10(line) for line in lines) + 2)
     top = "\u256d" + "\u2500" * inner + "\u256e"
     if title:
         tl = f" {title} "

@@ -66,9 +66,9 @@ def _12(stops, t: float) -> tuple[int, int, int]:
     seg = t * (len(stops) - 1)
     lo = int(seg // 1)
     hi = min(lo + 1, len(stops) - 1)
-    l = seg - lo
+    frac = seg - lo
     a, b = stops[lo], stops[hi]
-    return (_11(a[0], b[0], l), _11(a[1], b[1], l), _11(a[2], b[2], l))
+    return (_11(a[0], b[0], frac), _11(a[1], b[1], frac), _11(a[2], b[2], frac))
 
 
 def _13(r: int, g: int, b: int, bold: bool = False) -> str:

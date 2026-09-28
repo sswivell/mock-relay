@@ -1,9 +1,9 @@
 from __future__ import annotations
+
 import json
 import sys
 import urllib.error
 import urllib.request
-
 
 _01 = [
     ("GET", "http://localhost:8080/gh/users/octocat", None),

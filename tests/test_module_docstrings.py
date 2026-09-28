@@ -12,7 +12,7 @@ def test_all_public_modules_have_docstrings():
             continue
         with open(path, encoding="utf-8") as fh:
             lines = fh.read().splitlines()
-        first_stmt = next((l for l in lines if l.strip()), "")
+        first_stmt = next((line for line in lines if line.strip()), "")
         if not first_stmt.startswith('"""'):
             missing.append(base)
     assert not missing, f"modules without a docstring: {missing}"
