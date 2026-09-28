@@ -26,6 +26,7 @@ __all__ = [
     "is_valid_header_name",
     "is_valid_header_value",
     "is_within",
+    "parse_content_length",
     "parse_listen",
     "render_listen",
     "safe_child",
@@ -319,6 +320,50 @@ def safe_child(root: Path, *parts: str) -> Path:
             f"refusing to use {str(candidate)!r}: it resolves outside {str(base)!r}"
         )
     return candidate
+
+
+def parse_content_length(raw: object, *, max_digits: int = 18) -> int:
+    """Return the declared body length, or 0 when no header was sent.
+
+    Strict on purpose. A Content-Length is a promise about where the body
+    ends, so anything outside a run of decimal digits is refused rather
+    than interpreted. Python's ``int`` is far more permissive than HTTP:
+    it takes a leading ``+``, ignores surrounding whitespace, and accepts
+    underscore separators and non-ASCII digits. A negative value is worse
+    than a parse failure, because ``rfile.read(-n)`` does not raise -- it
+    reads to end of stream, so the request gets framed by whatever the
+    client sends next.
+
+    Raises SecurityError for every rejected shape.
+    """
+    from .errors import SecurityError
+
+    if raw is None:
+        return 0
+    if isinstance(raw, bool):
+        raise SecurityError("Content-Length must be a number, not a boolean")
+    if isinstance(raw, int):
+        if raw < 0:
+            raise SecurityError("Content-Length must not be negative")
+        return raw
+    if isinstance(raw, bytes):
+        try:
+            raw = raw.decode("ascii")
+        except UnicodeDecodeError:
+            raise SecurityError("Content-Length must be ASCII digits") from None
+    text = str(raw)
+    if not text:
+        raise SecurityError("Content-Length was present but empty")
+    if len(text) > max_digits:
+        raise SecurityError(
+            f"Content-Length has more than {max_digits} digits")
+    for ch in text:
+        if ch < "0" or ch > "9":
+            raise SecurityError(
+                "Content-Length must be a run of decimal digits, "
+                f"got {text[:32]!r}"
+            )
+    return int(text)
 
 
 def sanitize_headers(
