@@ -30,6 +30,7 @@ __all__ = [
     "parse_listen",
     "render_listen",
     "safe_child",
+    "safe_repr",
     "sanitize_headers",
     "temporary_free_mb",
     "validate_component",
@@ -322,6 +323,25 @@ def safe_child(root: Path, *parts: str) -> Path:
     return candidate
 
 
+def safe_repr(value: object, limit: int = 32) -> str:
+    """Render ``value`` for an error message without risking the renderer.
+
+    An error message that quotes hostile input can be the thing that
+    breaks: the value is attacker-controlled, and a character outside the
+    console encoding makes ``print`` raise while the diagnostic is being
+    composed. MockRelay writes errors to a real console, which on Windows
+    is routinely cp1252.
+
+    So: ASCII-only, escaped, and truncated. The point of a message here is
+    to say *what shape* was wrong, not to reproduce the payload.
+    """
+    text = value if isinstance(value, str) else str(value)
+    clipped = text[:limit]
+    if len(text) > limit:
+        clipped += "..."
+    return clipped.encode("ascii", "backslashreplace").decode("ascii")
+
+
 def parse_content_length(raw: object, *, max_digits: int = 18) -> int:
     """Return the declared body length, or 0 when no header was sent.
 
@@ -359,9 +379,10 @@ def parse_content_length(raw: object, *, max_digits: int = 18) -> int:
             f"Content-Length has more than {max_digits} digits")
     for ch in text:
         if ch < "0" or ch > "9":
+            bad = next(c for c in text if c < "0" or c > "9")
             raise SecurityError(
                 "Content-Length must be a run of decimal digits, "
-                f"got {text[:32]!r}"
+                f"got {safe_repr(text)!r} with {safe_repr(bad)!r}"
             )
     return int(text)
 
