@@ -1,7 +1,7 @@
 """JSON body normalization: replace values at configured JSON paths with a placeholder."""
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any
 
 _01 = "{{NORMALIZED}}"
 

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 _01 = "{{SECRET}}"
 _02 = re.compile(r"Bearer\s+[A-Za-z0-9._\-]+")

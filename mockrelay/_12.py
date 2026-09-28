@@ -5,7 +5,7 @@ import json
 import ssl
 import urllib.error
 import urllib.request
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 
 def _02(raw: bytes, content_type: str) -> Any:

@@ -4,7 +4,6 @@ from __future__ import annotations
 import http.server
 import json
 import threading
-from typing import Dict, List
 from urllib.parse import parse_qs, parse_qsl, urlparse
 
 from ._09 import _22 as _11
