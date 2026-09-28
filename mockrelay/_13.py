@@ -31,16 +31,16 @@ from ._12 import _04 as _15
 from ._12 import _05 as _16
 from ._12 import _06 as _17
 from .errors import LimitExceeded, MockRelayError, SecurityError
-from .security import parse_content_length
+from .security import check_request_framing
 
 
 def _read_body(handler) -> bytes:
-    """Read the declared request body, refusing a length we cannot honour.
+    """Read the declared request body, refusing framing we cannot honour.
 
     Kept out of the handler so the framing rules are testable without a
     socket, and so the admin server can share them.
     """
-    length = parse_content_length(handler.headers.get("Content-Length"))
+    length = check_request_framing(handler.headers)
     return handler.rfile.read(length) if length else b""
 
 

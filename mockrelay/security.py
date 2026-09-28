@@ -21,12 +21,14 @@ __all__ = [
     "HOP_BY_HOP_HEADERS",
     "LOOPBACK_HOST_NAMES",
     "ListenAddress",
+    "check_request_framing",
     "ensure_writable_dir",
     "is_loopback",
     "is_valid_header_name",
     "is_valid_header_value",
     "is_within",
     "parse_content_length",
+    "parse_content_length_fields",
     "parse_listen",
     "render_listen",
     "safe_child",
@@ -340,6 +342,82 @@ def safe_repr(value: object, limit: int = 32) -> str:
     if len(text) > limit:
         clipped += "..."
     return clipped.encode("ascii", "backslashreplace").decode("ascii")
+
+
+def parse_content_length_fields(
+    values: object, *, max_digits: int = 18
+) -> int:
+    """Resolve every ``Content-Length`` a request carries into one length.
+
+    ``http.server`` exposes repeated headers through ``get_all``, and
+    ``headers.get`` would hand back only the first. That is not a
+    simplification, it is the smuggling bug: a request declaring
+    ``Content-Length: 2`` and then ``Content-Length: 5`` was read as a
+    two-byte body, and whatever followed was parsed as the next request on
+    the connection.
+
+    RFC 7230 3.3.2 draws the line between duplicates that agree, which may
+    be collapsed, and duplicates that disagree, which must be refused. A
+    single field holding a comma list is treated the same way, since that
+    is the other shape a client can use to send the same thing.
+    """
+    from .errors import SecurityError
+
+    if values is None:
+        return 0
+    if isinstance(values, (str, bytes)):
+        values = [values]
+    parsed: list[int] = []
+    for value in values:
+        if isinstance(value, bytes):
+            try:
+                value = value.decode("latin-1")
+            except UnicodeDecodeError:  # pragma: no cover - defensive
+                raise SecurityError("Content-Length must be ASCII digits") from None
+        text = str(value)
+        # A comma list is a #rule in RFC 7230 section 7, which permits
+        # optional whitespace around the separators. Strip that here, and
+        # nowhere else: a lone field value with stray whitespace is a
+        # different question, and the header parser has already answered it.
+        for part in (p.strip(" \t") for p in text.split(",")):
+            parsed.append(parse_content_length(part, max_digits=max_digits))
+    if not parsed:
+        return 0
+    first = parsed[0]
+    for other in parsed[1:]:
+        if other != first:
+            raise SecurityError(
+                "request declares conflicting Content-Length values; "
+                "message framing is ambiguous"
+            )
+    return first
+
+
+def check_request_framing(headers: object) -> int:
+    """Return the declared body length, refusing ambiguous framing.
+
+    Checks the two rules that together define where a request body ends:
+    a single resolvable Content-Length, and no Transfer-Encoding
+    alongside it. ``Transfer-Encoding`` is not implemented and is never
+    going to be, so the honest answer is to refuse rather than to read a
+    zero-length body and let the chunks become a second request.
+    """
+    from .errors import SecurityError
+
+    def all_of(name: str) -> list[str]:
+        getter = getattr(headers, "get_all", None)
+        if getter is not None:
+            return list(getter(name) or [])
+        single = headers.get(name)  # type: ignore[attr-defined]
+        return [] if single is None else [single]
+
+    encodings = all_of("Transfer-Encoding")
+    if encodings:
+        raise SecurityError(
+            "Transfer-Encoding is not supported; MockRelay requires a "
+            f"Content-Length (got {safe_repr(encodings)!r})"
+        )
+    return parse_content_length_fields(all_of("Content-Length"))
 
 
 def parse_content_length(raw: object, *, max_digits: int = 18) -> int:

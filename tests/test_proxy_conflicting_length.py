@@ -175,7 +175,7 @@ def test_07_the_error_body_names_the_framing_problem(proxy):
     assert "Content-Length" in body["error"], body
 
 
-def test_08_a_smuggled_prefix_is_not_left_in_the_buffer():
+def test_08_a_smuggled_prefix_is_not_left_in_the_buffer(proxy):
     """After a 400 the connection must not be reusable for a smuggle.
 
     If the conflicting body was left unread, the next request on the
@@ -196,7 +196,7 @@ def test_08_a_smuggled_prefix_is_not_left_in_the_buffer():
         sock.settimeout(2)
         try:
             leftover = sock.recv(4096)
-        except (TimeoutError, socket.timeout):
+        except TimeoutError:
             leftover = b""
         assert b"HTTP/1.1 200" not in leftover, leftover
     finally:
