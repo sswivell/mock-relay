@@ -25,6 +25,8 @@
 | _15.py | CLI |
 | _16.py | exports |
 | _17.py | stats helpers |
+| _18.py | fixture validator |
+| _19.py | machine-readable output |
 
 ## Matching
 

@@ -1,11 +1,12 @@
 """CLI entry point and argparse-based command handlers."""
 from __future__ import annotations
+
 import argparse
+import contextlib
 import json
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from ._04 import _11 as _01
 from ._04 import _15 as _03
@@ -17,11 +18,39 @@ from ._09 import _22 as _31
 from ._09 import _29 as _32
 from ._10 import _04 as _08
 from ._11 import _01 as _09
+from ._12 import _06 as _13
 from ._13 import _18 as _10
 from ._13 import _30 as _11
 from ._14 import _10 as _12
-from ._12 import _06 as _13
 from ._17 import _02 as _17a
+from ._19 import _01 as _emit
+from ._version import __version__ as _01_version
+from .errors import EXIT_ERROR, EXIT_USAGE, MockRelayError
+
+
+def _26(cfg, args) -> None:
+    """Refuse to run on a config that did not load cleanly.
+
+    The loader tolerates a bad setting and falls back to a default so the
+    server can still start, but silently ignoring a typo means a user who
+    set a port gets a different one. Every command that is not `validate`
+    stops here instead, and names the settings that were wrong.
+    """
+    if not cfg.problems:
+        return
+    from .errors import EXIT_CONFIG, render_problems
+
+    if getattr(args, "json", False):
+        _emit(getattr(args, "cmd", None) or "error", None, problems=cfg.problems)
+    else:
+        print(render_problems("Configuration error", cfg.problems), file=sys.stderr)
+    raise SystemExit(EXIT_CONFIG)
+
+
+def _27(args):
+    cfg = _07._07(Path(args.config))
+    _26(cfg, args)
+    return cfg
 
 
 def _14(cfg: _07, store) -> None:
@@ -57,7 +86,7 @@ def _14(cfg: _07, store) -> None:
 
 
 def _15(args) -> None:
-    cfg = _07._07(Path(args.config))
+    cfg = _27(args)
     if args.mode:
         cfg.mode = args.mode
     if args.latency is not None:
@@ -72,12 +101,12 @@ def _15(args) -> None:
         proxy_srv = _11(state)
     except OSError as e:
         _06("err", f"proxy bind failed: {e}")
-        sys.exit(1)
+        raise SystemExit(EXIT_ERROR) from None
     try:
         admin_srv = _12(state)
     except OSError as e:
         _06("err", f"admin bind failed: {e}")
-        sys.exit(1)
+        raise SystemExit(EXIT_ERROR) from None
 
     _06("ok", "serving - Ctrl-C to stop")
     print()
@@ -104,13 +133,24 @@ def _17(args) -> None:
 
 
 def _18(args) -> None:
-    cfg = _07._07(Path(args.config))
+    cfg = _27(args)
     store = _08(cfg.fixtures_dir)
-    _01("F I X T U R E S", show_brand=False)
     rows = []
     for f in store._07(args.upstream):
         rows.append([f.upstream, f.match.method, f.match.path,
                      f.response.status, f.id])
+    if getattr(args, "json", False):
+        _emit(
+            "list",
+            {"fixtures": [
+                {"upstream": up, "method": method, "path": path,
+                 "status": status, "id": fid}
+                for up, method, path, status, fid in rows],
+             "count": len(rows)},
+            problems=store.problems or None,
+        )
+        return
+    _01("F I X T U R E S", show_brand=False)
     if not rows:
         _06("warn", "no fixtures")
         return
@@ -158,10 +198,10 @@ def _20(args) -> None:
 
 
 def _22(args) -> None:
-    cfg = _07._07(Path(args.config))
+    cfg = _27(args)
     store = _08(cfg.fixtures_dir)
     method = (args.method or "GET").upper()
-    query: Dict[str, List[str]] = {}
+    query: dict[str, list[str]] = {}
     for pair in args.query or []:
         k, _, v = str(pair).partition("=")
         query.setdefault(k, []).append(v)
@@ -174,6 +214,17 @@ def _22(args) -> None:
     opts = _32(cfg._12(args.upstream or "", args.path))
     fixtures = list(store._07(args.upstream))
     rows = _31(fixtures, method, args.path, query, body, opts)
+
+    if getattr(args, "json", False):
+        _emit("match", {
+            "method": method, "path": args.path, "query": query, "body": body,
+            "upstream": args.upstream or None,
+            "mode": opts.mode, "threshold": opts.threshold, "priority": opts.order,
+            "candidates": rows,
+            "winner": rows[0] if rows and rows[0]["matched"] else None,
+            "matched": bool(rows and rows[0]["matched"]),
+        })
+        return
 
     _01("M A T C H", show_brand=False)
     _04("method", method)
@@ -203,10 +254,199 @@ def _22(args) -> None:
         _06(mark, f"{c['name']}: {c['detail']}")
 
 
+def _23(args) -> None:
+    """Check a config and the fixtures beside it, without starting anything."""
+    from ._18 import _16 as _scan
+    from .errors import EXIT_VALIDATION, ConfigLoadError, render_problems
+
+    path = Path(args.config)
+    as_json = getattr(args, "json", False)
+
+    if not path.exists():
+        # serve tolerates a missing config and runs on defaults; validate was
+        # pointed at a file, so a missing one is the answer, not a fallback.
+        from .errors import ConfigLoadError as _missing
+
+        e = _missing(
+            ["does not exist"], source=str(path),
+            hint="Create one with `mockrelay init`.",
+        )
+        if as_json:
+            _emit("validate", {"config": str(path)}, problems=e.problems)
+        else:
+            print(e.render())
+        raise SystemExit(e.exit_code) from None
+
+    try:
+        cfg = _07._07(path)
+    except ConfigLoadError as e:
+        if as_json:
+            _emit("validate", {"config": str(path)}, problems=e.problems)
+        else:
+            print(e.render())
+        raise SystemExit(e.exit_code) from None
+
+    fixture_problems, total = _scan(cfg.fixtures_dir)
+    problems = [*cfg.problems, *fixture_problems]
+
+    if as_json:
+        data = {
+            "config": str(path),
+            "fixtures_dir": str(cfg.fixtures_dir.resolve()),
+            "upstreams": len(cfg.upstreams),
+            "fixtures_checked": total,
+            "problems_found": len(problems),
+        }
+        _emit("validate", data, problems=problems)
+        if problems:
+            raise SystemExit(EXIT_VALIDATION)
+        return
+
+    _01("V A L I D A T E", show_brand=False)
+    _04("config", str(path))
+    print()
+
+    _04("fixtures", str(cfg.fixtures_dir.resolve()))
+    _04("upstreams", str(len(cfg.upstreams)))
+    print()
+
+    if not problems:
+        _06("ok", "no problems found")
+        return
+
+    found = len(cfg.problems) + total
+    _06("err", f"{found} problem(s) found")
+    print()
+    print(render_problems(
+        "Validation failed",
+        problems,
+        hint="Fix the items above, then run `mockrelay validate` again.",
+    ))
+    raise SystemExit(EXIT_VALIDATION)
+
+
+def _24(args) -> None:
+    """Report what is recorded, grouped by upstream."""
+    from ._17 import _09 as _summarise
+
+    cfg = _27(args)
+    store = _08(cfg.fixtures_dir)
+    rows = _summarise(store, args.upstream)
+    total = sum(int(r["fixtures"]) for r in rows)
+    total_bytes = sum(int(r["bytes"]) for r in rows)
+
+    if getattr(args, "json", False):
+        _emit("stats", {
+            "fixtures_dir": str(cfg.fixtures_dir.resolve()),
+            "upstream": args.upstream or None,
+            "upstreams": rows,
+            "total_fixtures": total,
+            "total_bytes": total_bytes,
+        }, problems=store.problems or None)
+        return
+
+    _01("S T A T S", show_brand=False)
+    _04("fixtures_dir", str(cfg.fixtures_dir.resolve()))
+    _04("upstream", args.upstream or "(all)")
+    print()
+
+    if not total:
+        _06("warn", "no fixtures recorded yet")
+        return
+
+    _05(
+        ["upstream", "fixtures", "bytes", "methods", "statuses", "oldest", "newest"],
+        [[r["upstream"], r["fixtures"], r["bytes"], ",".join(r["methods"]),
+          ",".join(str(s) for s in r["statuses"]),
+          r["oldest"] or "-", r["newest"] or "-"]
+         for r in rows])
+    print()
+    _04("total", f"{total} fixture(s), {total_bytes} bytes")
+    for line in store._11():
+        _06("warn", line)
+
+
+def _25(args) -> None:
+    """Remove fixtures older than a cutoff, unless this is only a preview."""
+    from ._17 import _11 as _stale
+
+    as_json = getattr(args, "json", False)
+    if args.older_than <= 0:
+        if as_json:
+            _emit("clean", {"older_than_days": args.older_than},
+                  problems=["--older-than must be a positive number of days"])
+        else:
+            _06("err", "--older-than must be a positive number of days")
+        raise SystemExit(EXIT_USAGE)
+
+    cfg = _27(args)
+    store = _08(cfg.fixtures_dir)
+    picked = list(_stale(store, args.older_than, args.upstream))
+
+    freed = 0
+    for path, _fx in picked:
+        with contextlib.suppress(OSError):
+            freed += path.stat().st_size
+
+    if as_json:
+        removed: list[str] = []
+        failures: list[str] = []
+        if args.yes:
+            for path, _fx in picked:
+                try:
+                    path.unlink()
+                    removed.append(str(path))
+                except OSError as e:
+                    failures.append(f"{path}: {e.strerror or e}")
+        _emit("clean", {
+            "fixtures_dir": str(cfg.fixtures_dir.resolve()),
+            "upstream": args.upstream or None,
+            "older_than_days": args.older_than,
+            "dry_run": not args.yes,
+            "candidates": [str(p) for p, _ in picked],
+            "removed": removed,
+            "bytes": freed,
+        }, problems=failures or store.problems or None)
+        return
+
+    _01("C L E A N", show_brand=False)
+    _04("fixtures_dir", str(cfg.fixtures_dir.resolve()))
+    _04("older_than", f"{args.older_than:g} day(s)")
+    _04("upstream", args.upstream or "(all)")
+    print()
+
+    if not picked:
+        _06("ok", "nothing to remove")
+        return
+
+    if not args.yes:
+        for path, _fx in picked:
+            _06("info", str(path))
+        print()
+        _06("warn", f"would remove {len(picked)} fixture(s), {freed} bytes")
+        _06("info", "re-run with --yes to delete them")
+        return
+
+    removed = 0
+    for path, _fx in picked:
+        try:
+            path.unlink()
+            removed += 1
+        except OSError as e:
+            _06("err", f"{path}: {e.strerror or e}")
+    _06("ok", f"removed {removed} fixture(s), freed {freed} bytes")
+
+
 def _21() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="mockrelay",
         description="Universal local API mock-and-record proxy",
+    )
+    p.add_argument(
+        "--version",
+        action="version",
+        version=f"mockrelay {_01_version}",
+        help="print the installed version and exit",
     )
     sub = p.add_subparsers(dest="cmd")
 
@@ -229,6 +469,7 @@ def _21() -> argparse.ArgumentParser:
     lp = sub.add_parser("list")
     lp.add_argument("-c", "--config", default="mockrelay.yaml")
     lp.add_argument("-u", "--upstream")
+    lp.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     lp.set_defaults(func=_18)
 
     mt = sub.add_parser("match")
@@ -238,6 +479,7 @@ def _21() -> argparse.ArgumentParser:
     mt.add_argument("-u", "--upstream")
     mt.add_argument("-q", "--query", action="append")
     mt.add_argument("-b", "--body")
+    mt.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     mt.set_defaults(func=_22)
 
     ip = sub.add_parser("init")
@@ -247,15 +489,36 @@ def _21() -> argparse.ArgumentParser:
     cp = sub.add_parser("config")
     cp.set_defaults(func=_20)
 
+    vp = sub.add_parser("validate", help="check a config and its fixtures")
+    vp.add_argument("-c", "--config", default="mockrelay.yaml")
+    vp.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    vp.set_defaults(func=_23)
+
+    st = sub.add_parser("stats", help="count what has been recorded")
+    st.add_argument("-c", "--config", default="mockrelay.yaml")
+    st.add_argument("-u", "--upstream")
+    st.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    st.set_defaults(func=_24)
+
+    cl = sub.add_parser("clean", help="remove fixtures older than a cutoff")
+    cl.add_argument("-c", "--config", default="mockrelay.yaml")
+    cl.add_argument("-u", "--upstream")
+    cl.add_argument("--older-than", type=float, default=30.0,
+                    help="age in days; older fixtures are removed")
+    cl.add_argument("--yes", action="store_true",
+                    help="actually delete; without it this is a preview")
+    cl.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    cl.set_defaults(func=_25)
+
     return p
 
 
-def _40(argv: Optional[List[str]] = None) -> None:
+def _40(argv: list[str] | None = None) -> None:
     for _stream in (sys.stdout, sys.stderr):
-        try:
+        # Not every stream is reconfigurable: pytest's capture objects, and
+        # a detached stream, both raise here.
+        with contextlib.suppress(AttributeError, ValueError, OSError):
             _stream.reconfigure(encoding="utf-8", errors="replace")
-        except (AttributeError, ValueError, OSError):
-            pass
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv:
         argv = ["serve"]
@@ -264,6 +527,20 @@ def _40(argv: Optional[List[str]] = None) -> None:
     if not hasattr(args, "func"):
         parser.print_help()
         return
-    args.func(args)
+    try:
+        args.func(args)
+    except MockRelayError as e:
+        # A config the user got wrong is an answer, not a crash: render it
+        # the way the rest of the tool renders problems and exit on the
+        # code the exception carries, so a caller can branch on it.
+        if getattr(args, "json", False):
+            _emit(
+                getattr(args, "cmd", None) or "error",
+                None,
+                problems=getattr(e, "problems", None) or [e.message],
+            )
+        else:
+            print(e.render(), file=sys.stderr)
+        raise SystemExit(e.exit_code) from None
 
 

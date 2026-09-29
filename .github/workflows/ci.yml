@@ -4,19 +4,70 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -e .
-      - run: pip install pytest
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
       - run: pytest -q
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: pip install build
+      - run: python -m build
+      # Install the built wheel into a throwaway environment and run the
+      # console script, so a packaging mistake fails here and not on a
+      # user's machine.
+      - run: pip install dist/*.whl
+      - run: mockrelay --version
+      - name: the wheel ships every module the entry point imports
+        run: |
+          python - <<'PY'
+          import glob, sys, zipfile
+
+          wheel = glob.glob("dist/*.whl")[0]
+          shipped = {n.rsplit("/", 1)[-1] for n in zipfile.ZipFile(wheel).namelist()}
+          wanted = {"errors.py", "security.py", "_version.py", "_15.py"}
+          missing = wanted - shipped
+          sys.exit(f"missing from wheel: {sorted(missing)}" if missing else 0)
+          PY
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pip-audit
+      - run: pip install .
+      - run: pip-audit

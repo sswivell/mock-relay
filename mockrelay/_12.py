@@ -1,10 +1,11 @@
 """Upstream HTTP helper: raw request, body (de)serialization and host:port parsing."""
 from __future__ import annotations
+
 import json
 import ssl
 import urllib.error
 import urllib.request
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 
 def _02(raw: bytes, content_type: str) -> Any:
@@ -17,7 +18,7 @@ def _02(raw: bytes, content_type: str) -> Any:
             return raw.decode("utf-8", "replace")
     if "application/x-www-form-urlencoded" in content_type:
         from urllib.parse import parse_qs
-        return {k: v for k, v in parse_qs(raw.decode()).items()}
+        return dict(parse_qs(raw.decode()))
     return raw.decode("utf-8", "replace")
 
 
@@ -37,8 +38,8 @@ _04 = {
 }
 
 
-def _05(url: str, method: str, headers: Dict[str, str], body: Optional[bytes],
-        ) -> Tuple[int, Dict[str, str], bytes]:
+def _05(url: str, method: str, headers: dict[str, str], body: bytes | None,
+        ) -> tuple[int, dict[str, str], bytes]:
     req = urllib.request.Request(url, data=body, headers=headers, method=method)
     ctx = ssl.create_default_context()
     try:
@@ -49,6 +50,6 @@ def _05(url: str, method: str, headers: Dict[str, str], body: Optional[bytes],
         return e.code, hdrs, e.read()
 
 
-def _06(s: str) -> Tuple[str, int]:
+def _06(s: str) -> tuple[str, int]:
     host, _, port = s.partition(":")
     return (host or "127.0.0.1"), int(port or 8080)

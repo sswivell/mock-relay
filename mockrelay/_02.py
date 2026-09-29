@@ -1,5 +1,6 @@
 """Brand string obfuscation: XOR + base64 with an env-overridable key."""
 from __future__ import annotations
+
 import base64
 import os
 from typing import Optional
@@ -12,12 +13,12 @@ def _03(data: bytes, key: bytes) -> bytes:
     return bytes(b ^ key[i % len(key)] for i, b in enumerate(data))
 
 
-def _04(plain: str, key: Optional[str] = None) -> str:
+def _04(plain: str, key: str | None = None) -> str:
     k = (key or _01).encode("utf-8")
     return base64.b64encode(_03(plain.encode("utf-8"), k)).decode("ascii")
 
 
-def _05(blob: Optional[str] = None, key: Optional[str] = None) -> str:
+def _05(blob: str | None = None, key: str | None = None) -> str:
     b = (blob or _02).strip()
     k = (key or _01).encode("utf-8")
     try:

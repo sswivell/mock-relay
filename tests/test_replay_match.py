@@ -48,7 +48,7 @@ def _req(port, path, method="GET", body=None):
 
 def test_01_wildcard_replay_over_http():
     with tempfile.TemporaryDirectory() as td:
-        cfg, srv = _serve(td, [
+        _cfg, srv = _serve(td, [
             _fx("a", "/users/*", body={"ok": True}),
             _fx("b", "/files/**", body={"deep": True}),
         ])
@@ -77,7 +77,7 @@ def test_02_regex_and_fuzzy_replay_over_http():
             _fx("fz", "fuzzy:/customer/1234", body={"kind": "fuzzy"}),
             _fx("lit", "/exact/1", body={"kind": "exact"}),
         ]
-        cfg, srv = _serve(td, fixtures)
+        _cfg, srv = _serve(td, fixtures)
         try:
             port = srv.server_address[1]
             st, hdrs, raw = _req(port, "/u/users/42")
@@ -100,7 +100,7 @@ def test_03_json_aware_body_replay_over_http():
         fx = _06(id="j", upstream="u", match=match,
                  request=_04(method="POST", path="/orders"),
                  response=_05(status=201, body={"created": True}))
-        cfg, srv = _serve(td, [fx])
+        _cfg, srv = _serve(td, [fx])
         try:
             port = srv.server_address[1]
             st, _, raw = _req(port, "/u/orders", "POST",
@@ -123,7 +123,7 @@ def test_04_exact_beats_wildcard_over_http():
             _fx("wild", "/users/*", body={"from": "wild"}),
             _fx("exact", "/users/42", body={"from": "exact"}),
         ]
-        cfg, srv = _serve(td, fixtures)
+        _cfg, srv = _serve(td, fixtures)
         try:
             port = srv.server_address[1]
             st, _, raw = _req(port, "/u/users/42")
@@ -156,7 +156,7 @@ def test_05_route_match_mode_override_over_http():
 
 def test_06_fuzzy_disabled_by_default_over_http():
     with tempfile.TemporaryDirectory() as td:
-        cfg, srv = _serve(td, [_fx("fz", "/customer/1234", body={})])
+        _cfg, srv = _serve(td, [_fx("fz", "/customer/1234", body={})])
         try:
             port = srv.server_address[1]
             st, _, _ = _req(port, "/u/customer/123")
@@ -167,7 +167,7 @@ def test_06_fuzzy_disabled_by_default_over_http():
 
 def test_07_no_upstream_still_502():
     with tempfile.TemporaryDirectory() as td:
-        cfg, srv = _serve(td, [])
+        _cfg, srv = _serve(td, [])
         try:
             port = srv.server_address[1]
             st, _, raw = _req(port, "/nope/x")
@@ -220,6 +220,7 @@ def test_08_admin_match_api():
 
 def test_09_match_cli_end_to_end(capsys, tmp_path):
     from argparse import Namespace
+
     from mockrelay._15 import _22
     store = Store(str(tmp_path))
     for fid, path in (("a", "wildcard:/users/*"),

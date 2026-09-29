@@ -4,8 +4,17 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-28
+
 ### Added
 
+- `mockrelay validate`, which checks a config file and the fixture tree beside it without starting a server or reaching the network, and exits `4` when anything is wrong so a CI step can gate on it
+- `mockrelay stats`, which reports fixture count, bytes on disk, methods, statuses, and the recording window per upstream
+- `mockrelay clean --older-than DAYS`, which removes fixtures past a cutoff and previews by default; `recorded_at` is used when present and the file's modification time when it is not
+- `--json` on `list`, `match`, `validate`, `stats`, and `clean`, emitting one envelope with a schema version, an `ok` flag, and either `data` or `problems`
+- `mockrelay --version`
+- Documented exit codes: `1` runtime, `2` usage, `3` config, `4` validation, `130` interrupted
+- Config loading now reports every bad setting as a `Problem` with its location, instead of raising on the first one
 - Module docstrings for every `mockrelay/*.py` module, as required by `CONTRIBUTING.md`, with a test that keeps the tree honest
 - `match_priority` config key to reorder the matching criteria `path`, `body`, `query`, and `literal`, fully reversibly, resolvable globally, per upstream, and per route
 - Per-fixture integer `match.priority`, which outranks the specificity criteria; higher wins, negative values demote
@@ -14,11 +23,18 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- A command that is not `validate` now stops with exit code `3` when the config has a bad setting, and names it, rather than running on a default the user did not choose
+- Response bodies and response headers are redacted before a fixture is written, not only the request side
+- The match spec is built from the redacted body, so a secret cannot leak through `body_contains`
+- One redaction implementation, shared by the recorder and by error rendering, with a broader set of credential patterns and an idempotent filter
 - Candidate ordering now uses a rank tuple instead of the flat score, so reordering `match_priority` no longer inflates the reported `X-MockRelay-Score`
 
 ### Fixed
 
+- A long shared prefix no longer scores as an identity match; similarity is the length ratio of the shorter path to the longer, so `/users` and `/usersx` are no longer conflated
+- A JSON request body is redacted before being stored, as a string body already was
 - Documented `match_mode: off`, which was never a valid mode; removed in favour of describing the fallback to the enclosing scope
+- `serve` no longer exits with a traceback on a malformed config
 
 ## [0.3.0] - 2026-09-25
 

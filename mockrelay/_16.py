@@ -18,7 +18,21 @@ from ._04 import _19 as box
 from ._04 import _20 as spinner
 
 __all__ = [
-    "settings", "lock", "unlock", "encode_brand", "decode_brand",
-    "get_spinner", "spinner_frames", "header", "brand_line", "section",
-    "rule", "divider", "kv", "table", "status", "box", "spinner",
+    "box",
+    "brand_line",
+    "decode_brand",
+    "divider",
+    "encode_brand",
+    "get_spinner",
+    "header",
+    "kv",
+    "lock",
+    "rule",
+    "section",
+    "settings",
+    "spinner",
+    "spinner_frames",
+    "status",
+    "table",
+    "unlock",
 ]

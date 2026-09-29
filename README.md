@@ -101,8 +101,14 @@ mockrelay record
 mockrelay replay --latency 150
 mockrelay list
 mockrelay match /users/7
+mockrelay validate
 mockrelay stats
+mockrelay clean --older-than 30
 ```
+
+`list`, `match`, `validate`, `stats`, and `clean` take `--json` for scripting.
+`validate` exits non-zero when a config setting or a fixture is wrong, so it
+can gate a CI step.
 
 ## Docs
 

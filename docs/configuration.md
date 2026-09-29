@@ -53,3 +53,36 @@ wins.
 
 `smart_record_paths` is global only. When enabled, newly recorded fixtures
 store the strategy prefix they matched with.
+
+## Redaction and normalization
+
+Both run before anything is written to disk, on the request side and the
+response side.
+
+`redact_headers` names the headers whose values are replaced with
+`{{SECRET}}`. It is matched case-insensitively and applies to response
+headers as well as request headers, so a token an upstream echoes back in
+`x-api-key` does not land in the fixture.
+
+`normalize_json_paths` lists JSON paths whose values are replaced with
+`{{NORMALIZED}}`. Volatile values such as `$.id` and `$.created` would
+otherwise make every recording differ from the last.
+
+In addition, values that look like credentials are replaced wherever they
+appear, in a header value or in a body string. This is a best-effort
+filter, not a guarantee: no pattern list is complete. Review fixtures
+before committing them.
+
+    redact_headers:
+      - authorization
+      - cookie
+      - x-api-key
+
+    normalize_json_paths:
+      - "$.id"
+      - "$.created"
+      - "$.request_id"
+
+The request body, the response body, the response headers, and the match
+spec are all written through the same filter, so a secret cannot leak
+through matching metadata such as `body_contains`.

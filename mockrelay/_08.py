@@ -1,11 +1,12 @@
 """JSON body normalization: replace values at configured JSON paths with a placeholder."""
 from __future__ import annotations
-from typing import Any, List
+
+from typing import Any
 
 _01 = "{{NORMALIZED}}"
 
 
-def _02(body: Any, paths: List[str]) -> Any:
+def _02(body: Any, paths: list[str]) -> Any:
     if not paths or not isinstance(body, (dict, list)):
         return body
     body = _03(body)
@@ -16,7 +17,7 @@ def _02(body: Any, paths: List[str]) -> Any:
     return body
 
 
-def _04(node: Any, keys: List[str]) -> None:
+def _04(node: Any, keys: list[str]) -> None:
     if not keys:
         return
     k = keys[0]

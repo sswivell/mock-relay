@@ -10,7 +10,9 @@ from mockrelay._10 import _04 as _store
 
 def test_01_id_is_unchanged_for_plain_matches():
     match = _01(method="GET", path="/x", query_subset={"a": ["1"]})
-    legacy = hashlib.sha1(json.dumps({
+    # Recomputing with the legacy algorithm is the assertion: recorded
+    # fixtures must keep the ids they were stored under.
+    legacy = hashlib.sha1(json.dumps({  # noqa: S324
         "u": "u",
         "m": "GET",
         "p": "/x",
@@ -42,7 +44,7 @@ def test_03_spec_round_trip():
         assert raw["match"]["fuzzy_threshold"] == 0.9
         assert raw["match"]["ignore_case"] is True
         assert "body_contains" in raw["match"]
-        back = list(s._07("u"))[0]
+        back = next(iter(s._07("u")))
         assert back.match.match_mode == "fuzzy"
         assert back.match.fuzzy_threshold == 0.9
         assert back.match.ignore_case is True

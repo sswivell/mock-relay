@@ -1,6 +1,6 @@
 [project]
 name = "mockrelay"
-version = "0.4.0"
+dynamic = ["version"]
 description = "Record real HTTP traffic. Replay it forever, offline and deterministically."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -8,7 +8,7 @@ requires-python = ">=3.10"
 authors = [{ name = "sswivell" }]
 keywords = ["http", "mock", "record", "replay", "proxy", "fixtures", "testing"]
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
@@ -46,6 +46,9 @@ mockrelay = "mockrelay._15:_40"
 [build-system]
 requires = ["hatchling>=1.24"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "mockrelay/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["mockrelay"]
@@ -85,6 +88,15 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "mockrelay/_*.py" = ["F401", "E402", "N802", "N803", "N806"]
 "tests/*" = ["S101", "S105", "S106", "S311", "PTH123", "PTH118", "PTH110"]
+# S310: these modules exist to make outbound HTTP calls. The URLs come from
+# the user's own upstream config, and the proxy needs a client that will
+# follow redirects and stream bodies, which requests/httpx would not buy us.
+"mockrelay/_12.py" = ["S310"]
+"examples/*" = ["S310"]
+# S603/S607: sync_labels shells out to the `gh` CLI with a fixed argv and no
+# shell. The only variable input is a label name read from labels.yml, passed
+# as its own argv element.
+"scripts/sync_labels.py" = ["S603", "S607"]
 
 [tool.ruff.lint.flake8-bandit]
 check-typed-exception = false
