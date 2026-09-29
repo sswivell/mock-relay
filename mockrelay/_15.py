@@ -23,6 +23,7 @@ from ._13 import _18 as _10
 from ._13 import _30 as _11
 from ._14 import _10 as _12
 from ._17 import _02 as _17a
+from ._version import __version__ as _01_version
 
 
 def _14(cfg: _07, store) -> None:
@@ -208,6 +209,12 @@ def _21() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="mockrelay",
         description="Universal local API mock-and-record proxy",
+    )
+    p.add_argument(
+        "--version",
+        action="version",
+        version=f"mockrelay {_01_version}",
+        help="print the installed version and exit",
     )
     sub = p.add_subparsers(dest="cmd")
 

@@ -10,7 +10,6 @@ human reads.
 
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 
@@ -31,21 +30,6 @@ def _run(argv, capsys):
     return code, out.out, out.err
 
 
-def _write_config(tmp_path, extra="", **overrides):
-    """A minimal on-disk config pointing at a scratch fixtures dir."""
-    d = str(tmp_path / "fixtures").replace("\\", "/")
-    body = (
-        f"fixtures_dir: '{d}'\n"
-        "listen: '127.0.0.1:18080'\n"
-        "admin_listen: '127.0.0.1:18081'\n"
-        "mode: replay\n"
-        + extra
-    )
-    path = tmp_path / "mockrelay.yaml"
-    path.write_text(body, encoding="utf-8")
-    return path
-
-
 # --version
 
 
@@ -59,7 +43,7 @@ def test_02_version_matches_the_installed_package(capsys):
     """The flag and the metadata cannot drift, because both read one file."""
     import importlib.metadata
 
-    code, out, _ = _run(["--version"], capsys)
+    code, _out, _ = _run(["--version"], capsys)
     assert code == 0
     try:
         assert importlib.metadata.version("mockrelay") == __version__
@@ -72,7 +56,9 @@ def test_03_version_does_not_need_a_config_or_a_store(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     proc = subprocess.run(
         [sys.executable, "-m", "mockrelay", "--version"],
-        capture_output=True, text=True, check=False,
+        capture_output=True,
+        text=True,
+        check=False,
     )
     assert proc.returncode == 0, proc.stderr
     assert __version__ in proc.stdout
