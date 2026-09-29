@@ -606,3 +606,78 @@ def test_40_json_output_is_pure_json(tmp_path, capsys):
     code, out, _ = _run(["stats", "-c", str(path), "--json"], capsys)
     assert code == 0
     json.loads(out)
+
+
+# exit codes and error rendering
+
+
+_BAD = "listen: '127.0.0.1:99999'\nmode: replay\n"
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["list"],
+        ["match", "/x"],
+        ["stats"],
+        ["clean", "--yes"],
+    ],
+)
+def test_41_a_bad_config_exits_with_the_config_code(
+    tmp_path, capsys, monkeypatch, argv
+):
+    from mockrelay.errors import EXIT_CONFIG
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "mockrelay.yaml").write_text(_BAD, encoding="utf-8")
+    code, out, err = _run(argv, capsys)
+    assert code == EXIT_CONFIG
+    assert "Traceback" not in out + err
+    assert "listen" in (out + err)
+
+
+def test_42_a_bad_config_message_goes_to_stderr(tmp_path, capsys, monkeypatch):
+    """Stdout is for data; a script parsing it must not see an error."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "mockrelay.yaml").write_text(_BAD, encoding="utf-8")
+    _code, out, err = _run(["list"], capsys)
+    assert out.strip() == ""
+    assert err.strip() != ""
+
+
+def test_43_a_bad_config_with_json_emits_a_json_error(tmp_path, capsys, monkeypatch):
+    from mockrelay.errors import EXIT_CONFIG
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "mockrelay.yaml").write_text(_BAD, encoding="utf-8")
+    code, doc, _ = _json_run(["list", "--json"], capsys)
+    assert code == EXIT_CONFIG
+    assert doc["ok"] is False
+    assert doc["problems"]
+
+
+def test_44_bind_failure_uses_the_generic_error_code(tmp_path, capsys, monkeypatch):
+    """A port already in use is a runtime error, not a usage error."""
+    import socket
+
+    from mockrelay.errors import EXIT_ERROR
+
+    sock = socket.socket()
+    sock.bind(("127.0.0.1", 0))
+    port = sock.getsockname()[1]
+    other = socket.socket()
+    other.bind(("127.0.0.1", 0))
+    admin_port = other.getsockname()[1]
+    other.close()
+    path = tmp_path / "mockrelay.yaml"
+    path.write_text(
+        f"listen: '127.0.0.1:{port}'\nadmin_listen: '127.0.0.1:{admin_port}'\n"
+        "mode: replay\n",
+        encoding="utf-8",
+    )
+    try:
+        code, _, err = _run(["serve", "-c", str(path)], capsys)
+    finally:
+        sock.close()
+    assert code == EXIT_ERROR
+    assert "Traceback" not in err

@@ -25,6 +25,32 @@ from ._14 import _10 as _12
 from ._17 import _02 as _17a
 from ._19 import _01 as _emit
 from ._version import __version__ as _01_version
+from .errors import EXIT_ERROR, EXIT_USAGE, MockRelayError
+
+
+def _26(cfg, args) -> None:
+    """Refuse to run on a config that did not load cleanly.
+
+    The loader tolerates a bad setting and falls back to a default so the
+    server can still start, but silently ignoring a typo means a user who
+    set a port gets a different one. Every command that is not `validate`
+    stops here instead, and names the settings that were wrong.
+    """
+    if not cfg.problems:
+        return
+    from .errors import EXIT_CONFIG, render_problems
+
+    if getattr(args, "json", False):
+        _emit(getattr(args, "cmd", None) or "error", None, problems=cfg.problems)
+    else:
+        print(render_problems("Configuration error", cfg.problems), file=sys.stderr)
+    raise SystemExit(EXIT_CONFIG)
+
+
+def _27(args):
+    cfg = _07._07(Path(args.config))
+    _26(cfg, args)
+    return cfg
 
 
 def _14(cfg: _07, store) -> None:
@@ -60,7 +86,7 @@ def _14(cfg: _07, store) -> None:
 
 
 def _15(args) -> None:
-    cfg = _07._07(Path(args.config))
+    cfg = _27(args)
     if args.mode:
         cfg.mode = args.mode
     if args.latency is not None:
@@ -75,12 +101,12 @@ def _15(args) -> None:
         proxy_srv = _11(state)
     except OSError as e:
         _06("err", f"proxy bind failed: {e}")
-        sys.exit(1)
+        raise SystemExit(EXIT_ERROR) from None
     try:
         admin_srv = _12(state)
     except OSError as e:
         _06("err", f"admin bind failed: {e}")
-        sys.exit(1)
+        raise SystemExit(EXIT_ERROR) from None
 
     _06("ok", "serving - Ctrl-C to stop")
     print()
@@ -107,7 +133,7 @@ def _17(args) -> None:
 
 
 def _18(args) -> None:
-    cfg = _07._07(Path(args.config))
+    cfg = _27(args)
     store = _08(cfg.fixtures_dir)
     rows = []
     for f in store._07(args.upstream):
@@ -172,7 +198,7 @@ def _20(args) -> None:
 
 
 def _22(args) -> None:
-    cfg = _07._07(Path(args.config))
+    cfg = _27(args)
     store = _08(cfg.fixtures_dir)
     method = (args.method or "GET").upper()
     query: dict[str, list[str]] = {}
@@ -303,7 +329,7 @@ def _24(args) -> None:
     """Report what is recorded, grouped by upstream."""
     from ._17 import _09 as _summarise
 
-    cfg = _07._07(Path(args.config))
+    cfg = _27(args)
     store = _08(cfg.fixtures_dir)
     rows = _summarise(store, args.upstream)
     total = sum(int(r["fixtures"]) for r in rows)
@@ -351,9 +377,9 @@ def _25(args) -> None:
                   problems=["--older-than must be a positive number of days"])
         else:
             _06("err", "--older-than must be a positive number of days")
-        raise SystemExit(2)
+        raise SystemExit(EXIT_USAGE)
 
-    cfg = _07._07(Path(args.config))
+    cfg = _27(args)
     store = _08(cfg.fixtures_dir)
     picked = list(_stale(store, args.older_than, args.upstream))
 
@@ -501,6 +527,20 @@ def _40(argv: list[str] | None = None) -> None:
     if not hasattr(args, "func"):
         parser.print_help()
         return
-    args.func(args)
+    try:
+        args.func(args)
+    except MockRelayError as e:
+        # A config the user got wrong is an answer, not a crash: render it
+        # the way the rest of the tool renders problems and exit on the
+        # code the exception carries, so a caller can branch on it.
+        if getattr(args, "json", False):
+            _emit(
+                getattr(args, "cmd", None) or "error",
+                None,
+                problems=getattr(e, "problems", None) or [e.message],
+            )
+        else:
+            print(e.render(), file=sys.stderr)
+        raise SystemExit(e.exit_code) from None
 
 
