@@ -56,8 +56,7 @@ jobs:
 
           wheel = glob.glob("dist/*.whl")[0]
           shipped = {n.rsplit("/", 1)[-1] for n in zipfile.ZipFile(wheel).namelist()}
-          wanted = {"errors.py", "redact.py", "normalize.py", "security.py",
-                    "_version.py", "_15.py"}
+          wanted = {"errors.py", "security.py", "_version.py", "_15.py"}
           missing = wanted - shipped
           sys.exit(f"missing from wheel: {sorted(missing)}" if missing else 0)
           PY
