@@ -89,7 +89,13 @@ class _04:
             out.append(f"... and {hidden} more unreadable fixture file(s)")
         return out
 
-    def _07(self, upstream: str | None = None) -> Iterator[_02]:
+    def _12(self, upstream: str | None = None) -> Iterator[tuple[Path, _02]]:
+        """Every readable fixture, with the file it came from.
+
+        The path is what `stats` counts bytes on and what `clean` deletes,
+        and walking the tree anywhere but here would step around the store's
+        own path handling.
+        """
         self.problems = []
         self.problem_count = 0
         search = safe_child(self.root, str(upstream)) if upstream else self.root
@@ -97,9 +103,13 @@ class _04:
             return
         for path in sorted(search.rglob("*.json")):
             try:
-                yield _02._08(json.loads(path.read_text()))
+                yield path, _02._08(json.loads(path.read_text()))
             except (OSError, ValueError, KeyError, TypeError) as e:
                 self._10(path, e)
+
+    def _07(self, upstream: str | None = None) -> Iterator[_02]:
+        for _path, fixture in self._12(upstream):
+            yield fixture
 
     def _08(self, upstream: str, fixture_id: str) -> bool:
         p = self._05(upstream, fixture_id)
