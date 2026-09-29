@@ -31,7 +31,10 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - run: pip install ruff
+      # Install from the extra so the pinned Ruff in pyproject.toml is the
+      # one that runs here; a floating Ruff can turn main red on its own.
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
       - run: ruff check .
 
   package:
