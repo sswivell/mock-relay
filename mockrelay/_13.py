@@ -214,14 +214,22 @@ def _19(state: _18):
                 return self._26(502, {"error": "upstream failed", "detail": str(e)})
 
             if mode in ("record", "hybrid"):
+                # Everything below is written to disk and lives longer than
+                # the process that recorded it, so redaction is applied to
+                # the response and to a JSON request body here rather than
+                # being assumed to have happened upstream.
                 red_req = _06(dict(self.headers), cfg.redact_headers)
-                red_resp = {k: v for k, v in hdrs.items() if k.lower() not in _15}
+                red_body = _07(req_body) if isinstance(
+                    req_body, (dict, list, str)) else None
+                red_resp = _06(
+                    {k: v for k, v in hdrs.items() if k.lower() not in _15},
+                    cfg.redact_headers)
                 resp_parsed = _13(rbody, hdrs.get("Content-Type", ""))
-                norm_resp = _08(resp_parsed, cfg.normalize_json_paths)
+                norm_resp = _08(_07(resp_parsed), cfg.normalize_json_paths)
 
                 bc = None
-                if isinstance(req_body, dict) and req_body:
-                    bc = {k: v for k, v in list(req_body.items())[:5]
+                if isinstance(red_body, dict) and red_body:
+                    bc = {k: v for k, v in list(red_body.items())[:5]
                           if not isinstance(v, (dict, list))}
 
                 match_path = _35(norm_path) if cfg.smart_record_paths else norm_path
@@ -234,8 +242,7 @@ def _19(state: _18):
                     match=match,
                     request=_03(method=method, path=norm_path, query=q_multi,
                                 headers=red_req,
-                                body=(req_body if isinstance(req_body, (dict, list))
-                                      else (_07(req_body) if isinstance(req_body, str) else None))),
+                                body=red_body),
                     response=_04(status=st, headers=red_resp, body=norm_resp),
                     normalize=cfg.normalize_json_paths,
                 )
