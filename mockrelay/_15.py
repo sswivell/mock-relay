@@ -242,6 +242,82 @@ def _23(args) -> None:
     raise SystemExit(EXIT_VALIDATION)
 
 
+def _24(args) -> None:
+    """Report what is recorded, grouped by upstream."""
+    from ._17 import _09 as _summarise
+
+    cfg = _07._07(Path(args.config))
+    store = _08(cfg.fixtures_dir)
+    rows = _summarise(store, args.upstream)
+
+    _01("S T A T S", show_brand=False)
+    _04("fixtures_dir", str(cfg.fixtures_dir.resolve()))
+    _04("upstream", args.upstream or "(all)")
+    print()
+
+    total = sum(int(r["fixtures"]) for r in rows)
+    if not total:
+        _06("warn", "no fixtures recorded yet")
+        return
+
+    _05(
+        ["upstream", "fixtures", "bytes", "methods", "statuses", "oldest", "newest"],
+        [[r["upstream"], r["fixtures"], r["bytes"], ",".join(r["methods"]),
+          ",".join(str(s) for s in r["statuses"]),
+          r["oldest"] or "-", r["newest"] or "-"]
+         for r in rows])
+    print()
+    _04("total", f"{total} fixture(s), "
+                 f"{sum(int(r['bytes']) for r in rows)} bytes")
+    for line in store._11():
+        _06("warn", line)
+
+
+def _25(args) -> None:
+    """Remove fixtures older than a cutoff, unless this is only a preview."""
+    from ._17 import _11 as _stale
+
+    if args.older_than <= 0:
+        _06("err", "--older-than must be a positive number of days")
+        raise SystemExit(2)
+
+    cfg = _07._07(Path(args.config))
+    store = _08(cfg.fixtures_dir)
+
+    _01("C L E A N", show_brand=False)
+    _04("fixtures_dir", str(cfg.fixtures_dir.resolve()))
+    _04("older_than", f"{args.older_than:g} day(s)")
+    _04("upstream", args.upstream or "(all)")
+    print()
+
+    picked = list(_stale(store, args.older_than, args.upstream))
+    if not picked:
+        _06("ok", "nothing to remove")
+        return
+
+    freed = 0
+    for path, _fx in picked:
+        with contextlib.suppress(OSError):
+            freed += path.stat().st_size
+
+    if not args.yes:
+        for path, _fx in picked:
+            _06("info", str(path))
+        print()
+        _06("warn", f"would remove {len(picked)} fixture(s), {freed} bytes")
+        _06("info", "re-run with --yes to delete them")
+        return
+
+    removed = 0
+    for path, _fx in picked:
+        try:
+            path.unlink()
+            removed += 1
+        except OSError as e:
+            _06("err", f"{path}: {e.strerror or e}")
+    _06("ok", f"removed {removed} fixture(s), freed {freed} bytes")
+
+
 def _21() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="mockrelay",
@@ -295,6 +371,20 @@ def _21() -> argparse.ArgumentParser:
     vp = sub.add_parser("validate", help="check a config and its fixtures")
     vp.add_argument("-c", "--config", default="mockrelay.yaml")
     vp.set_defaults(func=_23)
+
+    st = sub.add_parser("stats", help="count what has been recorded")
+    st.add_argument("-c", "--config", default="mockrelay.yaml")
+    st.add_argument("-u", "--upstream")
+    st.set_defaults(func=_24)
+
+    cl = sub.add_parser("clean", help="remove fixtures older than a cutoff")
+    cl.add_argument("-c", "--config", default="mockrelay.yaml")
+    cl.add_argument("-u", "--upstream")
+    cl.add_argument("--older-than", type=float, default=30.0,
+                    help="age in days; older fixtures are removed")
+    cl.add_argument("--yes", action="store_true",
+                    help="actually delete; without it this is a preview")
+    cl.set_defaults(func=_25)
 
     return p
 

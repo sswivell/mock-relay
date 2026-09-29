@@ -332,3 +332,139 @@ def test_22_validate_defaults_to_mockrelay_yaml(tmp_path, capsys, monkeypatch):
     code, out, _ = _run(["validate"], capsys)
     assert code == 0
     assert "Traceback" not in out
+
+
+# stats
+
+
+def _tree_with(tmp_path, count=1, upstream="gh"):
+
+    from mockrelay._10 import _04 as Store
+
+    store = Store(tmp_path / "fixtures")
+    for i in range(count):
+        store._06(upstream, _fixture_obj(upstream, f"/things/{i}"))
+    return tmp_path / "fixtures"
+
+
+def _fixture_obj(upstream, path, status=200, recorded_at=None):
+    from mockrelay._06 import _01 as Match
+    from mockrelay._06 import _04 as Request
+    from mockrelay._06 import _05 as Response
+    from mockrelay._06 import _06 as Fixture
+
+    return Fixture(
+        id=f"{upstream}-get-{abs(hash(path)) % 100000:05d}",
+        upstream=upstream,
+        match=Match(method="GET", path=path),
+        request=Request(method="GET", path=path),
+        response=Response(status=status, headers={}, body={"ok": True}),
+        recorded_at=recorded_at,
+    )
+
+
+def test_23_stats_reports_a_count_per_upstream(tmp_path, capsys):
+    path = _config_file(tmp_path)
+    _tree_with(tmp_path, count=3)
+    code, out, _ = _run(["stats", "-c", str(path)], capsys)
+    assert code == 0
+    assert "gh" in out
+    assert "3" in out
+
+
+def test_24_stats_reports_an_empty_store(tmp_path, capsys):
+    path = _config_file(tmp_path)
+    code, out, _ = _run(["stats", "-c", str(path)], capsys)
+    assert code == 0
+    assert "no fixtures" in out.lower()
+
+
+def test_25_stats_can_be_limited_to_one_upstream(tmp_path, capsys):
+    import json
+
+    from mockrelay._10 import _04 as Store
+
+    path = _config_file(tmp_path)
+    store = Store(tmp_path / "fixtures")
+    store._06("gh", _fixture_obj("gh", "/a"))
+    store._06("stripe", _fixture_obj("stripe", "/b"))
+    code, out, _ = _run(["stats", "-c", str(path), "-u", "gh"], capsys)
+    assert code == 0
+    assert "gh" in out
+    assert json.dumps("stripe") not in out
+
+
+# clean
+
+
+def test_26_clean_without_yes_only_reports(tmp_path, capsys):
+    from datetime import datetime, timedelta, timezone
+
+    path = _config_file(tmp_path)
+    old = (datetime.now(timezone.utc) - timedelta(days=90)).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+    from mockrelay._10 import _04 as Store
+
+    store = Store(tmp_path / "fixtures")
+    stored = store._06("gh", _fixture_obj("gh", "/old", recorded_at=old))
+    code, out, _ = _run(["clean", "-c", str(path), "--older-than", "30"], capsys)
+    assert code == 0
+    assert stored.exists()
+    assert "would remove" in out.lower()
+
+
+def test_27_clean_with_yes_removes_old_fixtures(tmp_path, capsys):
+    from datetime import datetime, timedelta, timezone
+
+    path = _config_file(tmp_path)
+    old = (datetime.now(timezone.utc) - timedelta(days=90)).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+    from mockrelay._10 import _04 as Store
+
+    store = Store(tmp_path / "fixtures")
+    old_path = store._06("gh", _fixture_obj("gh", "/old", recorded_at=old))
+    new_path = store._06("gh", _fixture_obj("gh", "/new"))
+    code, out, _ = _run(
+        ["clean", "-c", str(path), "--older-than", "30", "--yes"], capsys
+    )
+    assert code == 0
+    assert not old_path.exists()
+    assert new_path.exists()
+    assert "removed" in out.lower()
+
+
+def test_28_clean_nothing_to_do_says_so(tmp_path, capsys):
+    path = _config_file(tmp_path)
+    _tree_with(tmp_path, count=1)
+    code, out, _ = _run(
+        ["clean", "-c", str(path), "--older-than", "30", "--yes"], capsys
+    )
+    assert code == 0
+    assert "nothing" in out.lower()
+
+
+def test_29_clean_can_be_limited_to_one_upstream(tmp_path, capsys):
+    from datetime import datetime, timedelta, timezone
+
+    path = _config_file(tmp_path)
+    old = (datetime.now(timezone.utc) - timedelta(days=90)).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+    from mockrelay._10 import _04 as Store
+
+    store = Store(tmp_path / "fixtures")
+    gh = store._06("gh", _fixture_obj("gh", "/old", recorded_at=old))
+    stripe = store._06("stripe", _fixture_obj("stripe", "/old", recorded_at=old))
+    _run(["clean", "-c", str(path), "--older-than", "30", "--yes", "-u", "gh"], capsys)
+    assert not gh.exists()
+    assert stripe.exists()
+
+
+def test_30_clean_needs_a_positive_age(tmp_path, capsys):
+    from mockrelay.errors import EXIT_USAGE
+
+    path = _config_file(tmp_path)
+    code, _, _ = _run(["clean", "-c", str(path), "--older-than", "0", "--yes"], capsys)
+    assert code == EXIT_USAGE
