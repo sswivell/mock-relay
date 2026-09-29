@@ -63,7 +63,9 @@ map. `_09.py` is the matcher and is the module you will edit most often.
 | `_14.py` | Admin API server |
 | `_15.py` | CLI entry point (`argparse`) |
 | `_16.py` | Terminal UI facade, re-exporting from `_01` and `_04` |
-| `_17.py` | Fixture counts per upstream |
+| `_17.py` | Fixture statistics and age-based pruning |
+| `_18.py` | Fixture validation |
+| `_19.py` | Machine-readable (JSON) output for the CLI |
 
 Numbering is load-bearing across modules, because modules import each other
 under aliases:
