@@ -468,3 +468,141 @@ def test_30_clean_needs_a_positive_age(tmp_path, capsys):
     path = _config_file(tmp_path)
     code, _, _ = _run(["clean", "-c", str(path), "--older-than", "0", "--yes"], capsys)
     assert code == EXIT_USAGE
+
+
+# --json
+
+
+def _json_run(argv, capsys):
+    import json
+
+    code, out, err = _run(argv, capsys)
+    assert "Traceback" not in out
+    return code, json.loads(out), err
+
+
+def test_31_list_json_is_an_envelope(tmp_path, capsys):
+    path = _config_file(tmp_path)
+    _tree_with(tmp_path, count=2)
+    code, doc, _ = _json_run(["list", "-c", str(path), "--json"], capsys)
+    assert code == 0
+    assert doc["schema"] == 1
+    assert doc["command"] == "list"
+    assert doc["ok"] is True
+    assert doc["data"]["count"] == 2
+    assert doc["data"]["fixtures"][0]["upstream"] == "gh"
+
+
+def test_32_list_json_on_an_empty_store_is_still_ok(tmp_path, capsys):
+    path = _config_file(tmp_path)
+    code, doc, _ = _json_run(["list", "-c", str(path), "--json"], capsys)
+    assert code == 0
+    assert doc["ok"] is True
+    assert doc["data"]["fixtures"] == []
+
+
+def test_33_stats_json_carries_totals(tmp_path, capsys):
+    path = _config_file(tmp_path)
+    _tree_with(tmp_path, count=3)
+    code, doc, _ = _json_run(["stats", "-c", str(path), "--json"], capsys)
+    assert code == 0
+    assert doc["data"]["total_fixtures"] == 3
+    assert doc["data"]["total_bytes"] > 0
+    assert doc["data"]["upstreams"][0]["upstream"] == "gh"
+
+
+def test_34_validate_json_reports_problems_and_exit_code(tmp_path, capsys):
+    from mockrelay.errors import EXIT_VALIDATION
+
+    d = tmp_path / "fixtures"
+    d.mkdir()
+    (d / "bad.json").write_text('{"id": "x"}', encoding="utf-8")
+    path = tmp_path / "mockrelay.yaml"
+    path.write_text(f"fixtures_dir: '{d}'\nmode: replay\n", encoding="utf-8")
+    code, doc, _ = _json_run(["validate", "-c", str(path), "--json"], capsys)
+    assert code == EXIT_VALIDATION
+    assert doc["ok"] is False
+    assert doc["problems"]
+    assert doc["data"]["problems_found"] >= 1
+
+
+def test_35_validate_json_on_a_sound_tree_is_ok(tmp_path, capsys):
+    path = _config_file(tmp_path)
+    _tree_with(tmp_path, count=1)
+    code, doc, _ = _json_run(["validate", "-c", str(path), "--json"], capsys)
+    assert code == 0
+    assert doc["ok"] is True
+    assert "problems" not in doc
+
+
+def test_36_validate_json_reports_a_missing_config(tmp_path, capsys):
+    from mockrelay.errors import EXIT_CONFIG
+
+    code, doc, _ = _json_run(
+        ["validate", "-c", str(tmp_path / "nope.yaml"), "--json"], capsys
+    )
+    assert code == EXIT_CONFIG
+    assert doc["ok"] is False
+    assert doc["problems"]
+
+
+def test_37_match_json_carries_the_candidates(tmp_path, capsys):
+    path = _config_file(tmp_path)
+    _tree_with(tmp_path, count=1)
+    code, doc, _ = _json_run(["match", "/things/0", "-c", str(path), "--json"], capsys)
+    assert code == 0
+    assert doc["command"] == "match"
+    assert doc["data"]["candidates"]
+    assert doc["data"]["candidates"][0]["matched"] is True
+
+
+def test_38_clean_json_previews_without_deleting(tmp_path, capsys):
+    from datetime import datetime, timedelta, timezone
+
+    from mockrelay._10 import _04 as Store
+
+    path = _config_file(tmp_path)
+    old = (datetime.now(timezone.utc) - timedelta(days=90)).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+    store = Store(tmp_path / "fixtures")
+    stored = store._06("gh", _fixture_obj("gh", "/old", recorded_at=old))
+    code, doc, _ = _json_run(
+        ["clean", "-c", str(path), "--older-than", "30", "--json"], capsys
+    )
+    assert code == 0
+    assert doc["data"]["dry_run"] is True
+    assert doc["data"]["removed"] == []
+    assert len(doc["data"]["candidates"]) == 1
+    assert stored.exists()
+
+
+def test_39_clean_json_deletes_when_asked(tmp_path, capsys):
+    from datetime import datetime, timedelta, timezone
+
+    from mockrelay._10 import _04 as Store
+
+    path = _config_file(tmp_path)
+    old = (datetime.now(timezone.utc) - timedelta(days=90)).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+    store = Store(tmp_path / "fixtures")
+    stored = store._06("gh", _fixture_obj("gh", "/old", recorded_at=old))
+    code, doc, _ = _json_run(
+        ["clean", "-c", str(path), "--older-than", "30", "--yes", "--json"], capsys
+    )
+    assert code == 0
+    assert doc["data"]["dry_run"] is False
+    assert len(doc["data"]["removed"]) == 1
+    assert not stored.exists()
+
+
+def test_40_json_output_is_pure_json(tmp_path, capsys):
+    """A script parsing stdout must not have to strip a banner first."""
+    import json
+
+    path = _config_file(tmp_path)
+    _tree_with(tmp_path, count=1)
+    code, out, _ = _run(["stats", "-c", str(path), "--json"], capsys)
+    assert code == 0
+    json.loads(out)
