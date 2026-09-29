@@ -159,9 +159,11 @@ def _18(args) -> None:
 
 def _19(args) -> None:
     path = Path(args.path)
-    if path.exists():
-        _06("warn", f"refusing to overwrite {path}")
+    if path.exists() and not args.force:
+        _06("warn", f"refusing to overwrite {path} (use --force to replace it)")
         return
+    if path.exists():
+        _06("warn", f"overwriting {path} with --force")
     path.write_text(
         "listen: '127.0.0.1:8080'\n"
         "admin_listen: '127.0.0.1:8081'\n"
@@ -484,6 +486,8 @@ def _21() -> argparse.ArgumentParser:
 
     ip = sub.add_parser("init")
     ip.add_argument("path", nargs="?", default="mockrelay.yaml")
+    ip.add_argument("--force", action="store_true",
+                    help="overwrite the file if it already exists")
     ip.set_defaults(func=_19)
 
     cp = sub.add_parser("config")

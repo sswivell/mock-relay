@@ -15,6 +15,7 @@ All notable changes to this project are documented here.
 - `mockrelay --version`
 - Documented exit codes: `1` runtime, `2` usage, `3` config, `4` validation, `130` interrupted
 - Config loading now reports every bad setting as a `Problem` with its location, instead of raising on the first one
+- `mockrelay init --force` to replace an existing `mockrelay.yaml` instead of refusing
 - Module docstrings for every `mockrelay/*.py` module, as required by `CONTRIBUTING.md`, with a test that keeps the tree honest
 - `match_priority` config key to reorder the matching criteria `path`, `body`, `query`, and `literal`, fully reversibly, resolvable globally, per upstream, and per route
 - Per-fixture integer `match.priority`, which outranks the specificity criteria; higher wins, negative values demote

@@ -120,8 +120,10 @@ shows its `prio` column so an overridden fixture is visible at a glance.
 
     mockrelay init
     mockrelay init path/to/mockrelay.yaml
+    mockrelay init --force
 
-Writes a starter config. Refuses to overwrite an existing file.
+Writes a starter config. Refuses to overwrite an existing file unless
+`--force` is given, in which case it replaces the file.
 
 ## config
 
