@@ -233,3 +233,102 @@ def test_15_a_missing_config_file_still_loads_defaults(tmp_path):
     cfg = _06._07(tmp_path / "absent.yaml")
     assert cfg.problems == []
     assert cfg.mode == "record"
+
+
+# validate
+
+
+def _fixture(upstream="gh", path="/users/octocat", status=200):
+    return {
+        "id": f"{upstream}-get-{abs(hash(path)) % 10000:04d}",
+        "upstream": upstream,
+        "match": {"method": "GET", "path": path},
+        "request": {
+            "method": "GET",
+            "path": path,
+            "query": {},
+            "headers": {},
+            "body": None,
+        },
+        "response": {"status": status, "headers": {}, "body": {"ok": True}},
+        "normalize": [],
+        "recorded_at": "2024-01-01T00:00:00Z",
+        "call_index": 0,
+    }
+
+
+def _config_file(tmp_path, extra=""):
+    d = str(tmp_path / "fixtures").replace("\\", "/")
+    path = tmp_path / "mockrelay.yaml"
+    path.write_text(f"fixtures_dir: '{d}'\nmode: replay\n{extra}", encoding="utf-8")
+    return path
+
+
+def test_16_a_sound_config_and_tree_exit_zero(tmp_path, capsys):
+    import json
+
+    path = _config_file(tmp_path)
+    tree = tmp_path / "fixtures" / "gh"
+    tree.mkdir(parents=True)
+    (tree / "a.json").write_text(json.dumps(_fixture()), encoding="utf-8")
+    code, out, _ = _run(["validate", "-c", str(path)], capsys)
+    assert code == 0
+    assert "no problems" in out
+    assert "Traceback" not in out
+
+
+def test_17_an_empty_tree_is_valid(tmp_path, capsys):
+    path = _config_file(tmp_path)
+    code, _, _ = _run(["validate", "-c", str(path)], capsys)
+    assert code == 0
+
+
+def test_18_a_bad_setting_exits_validation_failed(tmp_path, capsys):
+    from mockrelay.errors import EXIT_VALIDATION
+
+    path = _config_file(tmp_path, "latency_ms: soon\n")
+    code, out, _ = _run(["validate", "-c", str(path)], capsys)
+    assert code == EXIT_VALIDATION
+    assert "latency_ms" in out
+
+
+def test_19_a_broken_fixture_exits_validation_failed(tmp_path, capsys):
+    import json
+
+    from mockrelay.errors import EXIT_VALIDATION
+
+    path = _config_file(tmp_path)
+    tree = tmp_path / "fixtures" / "gh"
+    tree.mkdir(parents=True)
+    (tree / "broken.json").write_text(json.dumps({"id": "x"}), encoding="utf-8")
+    code, out, _ = _run(["validate", "-c", str(path)], capsys)
+    assert code == EXIT_VALIDATION
+    assert "broken.json" in out
+
+
+def test_20_an_unparseable_config_exits_config_error(tmp_path, capsys):
+    from mockrelay.errors import EXIT_CONFIG
+
+    path = tmp_path / "mockrelay.yaml"
+    path.write_text("listen: [unclosed\n", encoding="utf-8")
+    code, out, _ = _run(["validate", "-c", str(path)], capsys)
+    assert code == EXIT_CONFIG
+    assert "Configuration error" in out
+    assert "Traceback" not in out
+
+
+def test_21_validate_reports_every_problem_not_just_the_first(tmp_path, capsys):
+    path = _config_file(tmp_path, "latency_ms: soon\nmode: sideways\n")
+    _, out, _ = _run(["validate", "-c", str(path)], capsys)
+    assert "latency_ms" in out
+    assert "mode" in out
+
+
+def test_22_validate_defaults_to_mockrelay_yaml(tmp_path, capsys, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "mockrelay.yaml").write_text(
+        "fixtures_dir: './fx'\nmode: replay\n", encoding="utf-8"
+    )
+    code, out, _ = _run(["validate"], capsys)
+    assert code == 0
+    assert "Traceback" not in out

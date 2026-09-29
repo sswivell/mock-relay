@@ -205,6 +205,43 @@ def _22(args) -> None:
         _06(mark, f"{c['name']}: {c['detail']}")
 
 
+def _23(args) -> None:
+    """Check a config and the fixtures beside it, without starting anything."""
+    from ._18 import _16 as _scan
+    from .errors import EXIT_VALIDATION, ConfigLoadError, render_problems
+
+    path = Path(args.config)
+    _01("V A L I D A T E", show_brand=False)
+    _04("config", str(path))
+    print()
+
+    try:
+        cfg = _07._07(path)
+    except ConfigLoadError as e:
+        print(e.render())
+        raise SystemExit(e.exit_code) from None
+
+    fixture_problems, total = _scan(cfg.fixtures_dir)
+    problems = [*cfg.problems, *fixture_problems]
+    _04("fixtures", str(cfg.fixtures_dir.resolve()))
+    _04("upstreams", str(len(cfg.upstreams)))
+    print()
+
+    if not problems:
+        _06("ok", "no problems found")
+        return
+
+    found = len(cfg.problems) + total
+    _06("err", f"{found} problem(s) found")
+    print()
+    print(render_problems(
+        "Validation failed",
+        problems,
+        hint="Fix the items above, then run `mockrelay validate` again.",
+    ))
+    raise SystemExit(EXIT_VALIDATION)
+
+
 def _21() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="mockrelay",
@@ -254,6 +291,10 @@ def _21() -> argparse.ArgumentParser:
 
     cp = sub.add_parser("config")
     cp.set_defaults(func=_20)
+
+    vp = sub.add_parser("validate", help="check a config and its fixtures")
+    vp.add_argument("-c", "--config", default="mockrelay.yaml")
+    vp.set_defaults(func=_23)
 
     return p
 
