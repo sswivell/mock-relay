@@ -110,7 +110,7 @@ def render_problems(
     hint: str = "",
     limit: int = 0,
 ) -> str:
-    from .redact import scrub
+    from ._07 import _06 as scrub
 
     lines: list[str] = [kind, ""]
     if source:
@@ -158,7 +158,7 @@ class MockRelayError(Exception):
             self.exit_code = exit_code
 
     def render(self) -> str:
-        from .redact import scrub
+        from ._07 import _06 as scrub
 
         return render_problems(
             f"{self.kind}",
