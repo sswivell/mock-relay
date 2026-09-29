@@ -139,10 +139,10 @@ class _06:
             ))
             return default
         _, _, port = value.rpartition(":")
-        if not port.isdigit() or not 0 < int(port) < 65536:
+        if not port.isdigit() or not 0 <= int(port) < 65536:
             self.problems.append(Problem(
                 "is not a valid port number", subject=f"{name}:",
-                expected="a port between 1 and 65535",
+                expected="a port between 1 and 65535, or 0 to pick a free one",
             ))
             return default
         return value

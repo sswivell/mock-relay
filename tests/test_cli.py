@@ -145,6 +145,18 @@ def test_05_bad_settings_are_reported_not_raised(data, subject):
     assert subject in _subjects(data)
 
 
+def test_05b_a_port_of_zero_picks_a_free_port():
+    """`host:0` is how a caller asks the OS for an unused port.
+
+    Rejecting it silently moved every such caller onto the default port,
+    which then collided when several servers were up at once.
+    """
+    cfg = _load({"listen": "127.0.0.1:0", "admin_listen": "127.0.0.1:0"})
+    assert cfg.problems == []
+    assert cfg.listen == "127.0.0.1:0"
+    assert cfg.admin_listen == "127.0.0.1:0"
+
+
 def test_06_wrongly_typed_booleans_are_reported():
     for key in (
         "ignore_case",
