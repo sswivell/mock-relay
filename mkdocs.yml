@@ -13,49 +13,34 @@ copyright: Copyright &copy; sswivell - MIT licensed
 theme:
   name: material
   language: en
+  # Only used for the <head> meta tags in main.html: canonical URL and the
+  # Open Graph / Twitter card so a shared link renders a preview.
   custom_dir: docs/overrides
   logo: assets/logo.svg
   favicon: assets/logo.svg
+  # White background, no dark mode. The stock colours, not custom ones.
   palette:
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/brightness-7
-        name: Switch to light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/brightness-4
-        name: Switch to dark mode
+    scheme: default
+    primary: blue
+    accent: blue
   font:
-    text: Inter
-    code: JetBrains Mono
+    text: false
+    code: false
+  # Navigation that is easy to get around with: a search box, a full section
+  # tree, prev/next links, and a back-to-top button. The animated features
+  # (instant loading, scroll tracking) are deliberately off.
   features:
-    - announce.dismiss
-    - content.code.copy
-    - content.tabs.link
-    - navigation.footer
-    - navigation.indexes
-    - navigation.instant
-    - navigation.instant.progress
     - navigation.sections
+    - navigation.indexes
     - navigation.top
-    - navigation.tracking
+    - navigation.footer
     - search.highlight
-    - search.share
     - search.suggest
     - toc.follow
+    - content.code.copy
 
 extra_css:
   - stylesheets/extra.css
-
-extra_javascript:
-  - javascripts/copy.js
-  - javascripts/nav.js
 
 extra:
   generator: false

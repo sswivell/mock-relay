@@ -2,8 +2,6 @@
 
 {% block extrahead %}
   {{ super() }}
-  <meta name="theme-color" content="#0b0f19">
-  <meta name="color-scheme" content="dark light">
   <link rel="canonical" href="{{ page.canonical_url | default(config.site_url) }}">
 
   {# Open Graph. The image is served from the site itself so it works for
@@ -18,7 +16,4 @@
   <meta name="twitter:title" content="MockRelay — record real HTTP traffic, replay it offline">
   <meta name="twitter:description" content="A local HTTP proxy that records real API traffic into redacted JSON fixtures and replays them offline with ranked, deterministic matching.">
   <meta name="twitter:image" content="{{ config.site_url }}assets/social-preview.png">
-
-  <link rel="icon" href="{{ 'assets/logo.svg' | url }}" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 {% endblock %}

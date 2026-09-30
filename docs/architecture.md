@@ -23,10 +23,13 @@
 | _13.py | proxy server |
 | _14.py | admin server |
 | _15.py | CLI |
-| _16.py | exports |
+| _16.py | demo bootstrap |
 | _17.py | stats helpers |
 | _18.py | fixture validator |
 | _19.py | machine-readable output |
+
+The per-file responsibilities, and the rules for working in this layout, are in
+the [development guide](development.md).
 
 ## Matching
 
