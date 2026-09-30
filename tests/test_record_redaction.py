@@ -123,16 +123,10 @@ def td():
         yield d
 
 
-# the response the client receives is not the thing under test
-
-
 def test_01_the_client_still_gets_the_real_response(td):
     _store, (status, _hdrs, raw) = _record(td)
     assert status == 200
     assert json.loads(raw) == {"ok": True}
-
-
-# the response body is not redacted at all today
 
 
 def test_02_a_token_in_the_response_body_is_not_written(td):
@@ -161,9 +155,6 @@ def test_05_a_stripe_key_in_the_response_body_is_not_written(td):
     store, _ = _record(td, upstream=_upstream(body={"key": "sk_live_ABCDEFGHIJKLMNOP"}))
     text = _only(store).read_text(encoding="utf-8")
     assert "sk_live_ABCDEFGHIJKLMNOP" not in text
-
-
-# response headers ignore the redact_headers setting entirely today
 
 
 def test_06_a_configured_response_header_is_not_written(td):
@@ -206,9 +197,6 @@ def test_08c_a_json_request_body_keeps_its_other_fields(td):
     body = json.loads(_only(store).read_text(encoding="utf-8"))["request"]["body"]
     assert body["name"] == "octocat"
     assert body["token"] != SECRET
-
-
-# redaction must not destroy the fixture
 
 
 def test_09_the_non_secret_values_survive(td):

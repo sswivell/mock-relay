@@ -18,20 +18,17 @@ import pytest
 from mockrelay.errors import SecurityError
 from mockrelay.security import parse_content_length
 
-# Characters that a narrow Windows console cannot encode. Written as
-# escapes so the file stays readable and so an editor cannot normalise one
-# of them into plain ASCII behind the test's back.
 HOSTILE = [
-    "\uff15",       # fullwidth digit five
-    "é",            # latin-1, fine in UTF-8 but not cp437
-    "あ",       # hiragana
-    "\U0001f600",        # emoji
-    "�",      # replacement char
-    "\u00a0",       # non-breaking space
-    "\u2028",       # line separator
-    "\x00",          # NUL
-    "\x7f",          # DEL
-    "",            # zero-width space
+    "\uff15",
+    "é",
+    "あ",
+    "\U0001f600",
+    "�",
+    "\u00a0",
+    "\u2028",
+    "\x00",
+    "\x7f",
+    "",
 ]
 
 CONSOLE_ENCODINGS = ["cp1252", "cp437", "ascii", "latin-1"]

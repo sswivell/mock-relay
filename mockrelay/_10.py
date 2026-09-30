@@ -30,9 +30,6 @@ def _03(upstream: str, match: _01) -> str:
     prio = getattr(match, "priority", None)
     if prio:
         payload["pr"] = prio
-    # SHA-1 here is a content fingerprint for a stable fixture id, never a
-    # security primitive: preimage resistance is not what the id depends on,
-    # and switching the algorithm would re-key every recorded fixture.
     return hashlib.sha1(  # noqa: S324
         json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()[:12]
 
@@ -71,8 +68,6 @@ class _04:
             "%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         tmp = p.with_suffix(".json.tmp")
         tmp.write_text(json.dumps(fixture._07(), indent=2), encoding="utf-8")
-        # Rename over the target so a crash mid-write cannot leave a
-        # half-written fixture where a complete one used to be.
         tmp.replace(p)
         return p
 

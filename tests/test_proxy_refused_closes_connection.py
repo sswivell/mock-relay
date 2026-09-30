@@ -22,8 +22,6 @@ from mockrelay._11 import _01 as Metrics
 from mockrelay._13 import _18 as State
 from mockrelay._13 import _30 as start
 
-# A second request spliced onto the body of the first. If the server
-# fails to close, it reads these bytes and serves a 200.
 SMUGGLED = b"{}GET /u/x HTTP/1.1\r\nHost: h\r\nContent-Length: 2\r\n\r\n{}"
 
 

@@ -385,11 +385,6 @@ def _20(a: str, b: str) -> float:
     if not a or not b:
         return 0.0
     if len(a) * len(b) > 250000:
-        # difflib is quadratic, so oversized pairs take a cheap path. That
-        # path must not hand back 1.0: a shared prefix is a near miss, not
-        # identity, and callers compare the score against a threshold where
-        # 1.0 means "only ever the very same string". Score a prefix by how
-        # much of the longer string it covers instead.
         short, long = (a, b) if len(a) <= len(b) else (b, a)
         return len(short) / len(long) if long.startswith(short) else 0.0
     return difflib.SequenceMatcher(None, a, b).ratio()

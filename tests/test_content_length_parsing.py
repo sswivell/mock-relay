@@ -17,7 +17,6 @@ import pytest
 from mockrelay.errors import SecurityError
 from mockrelay.security import parse_content_length
 
-# Values HTTP permits: a run of decimal digits.
 VALID = [
     ("0", 0),
     ("1", 1),
@@ -28,31 +27,28 @@ VALID = [
     ("1234567890", 1234567890),
 ]
 
-# Values HTTP does not permit. Each is a case where leniency is a bug.
-# Escapes are used for the non-ASCII cases so the file stays readable and
-# so a source encoding change cannot silently alter what is under test.
 INVALID = [
-    "",            # present but empty
-    " ",           # whitespace only
+    "",
+    " ",
     "abc",
-    "-1",          # negative: read(-1) reads to EOF, silently reframing
+    "-1",
     "-0",
-    "+5",          # int() accepts this; HTTP does not
-    " 5 ",         # int() strips this; a proxy must not guess
-    "5 ",          # trailing OWS
+    "+5",
+    " 5 ",
+    "5 ",
     " 5",
-    "5.0",         # not an integer
-    "1e3",         # scientific notation
-    "0x10",        # hexadecimal
-    "5, 5",        # comma-joined, as proxies have historically emitted
+    "5.0",
+    "1e3",
+    "0x10",
+    "5, 5",
     "5;5",
-    "999999999999999999999999",   # beyond any integer width we would honour
-    "5\n",         # header injection attempt
+    "999999999999999999999999",
+    "5\n",
     "5\r\n",
     "0b101",
     "0o17",
-    "\uff15",      # fullwidth digit five: int() accepts it
-    "1_000",       # underscore separators: int() accepts it
+    "\uff15",
+    "1_000",
 ]
 
 

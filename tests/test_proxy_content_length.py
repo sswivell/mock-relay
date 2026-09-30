@@ -25,16 +25,6 @@ from mockrelay._11 import _01 as Metrics
 from mockrelay._13 import _18 as State
 from mockrelay._13 import _30 as start
 
-# Non-numeric forms, all of which raised ValueError from int().
-#
-# Note what is absent. Optional whitespace is not here: RFC 7230 strips it
-# from a field value, so " 5" arrives at the handler as "5" and is legal.
-# Nor is a non-ASCII digit: HTTP/1.1 header values are latin-1, so the
-# client cannot put one on the wire at all. Nor is a repeated identical
-# length: RFC 7230 3.3.2 permits collapsing "5, 5", and that is covered
-# in tests/test_proxy_conflicting_length.py. All three are at the parser
-# level in tests/test_content_length_parsing.py, which is where they
-# belong.
 MALFORMED = [
     "abc",
     "1e3",
@@ -47,7 +37,6 @@ MALFORMED = [
     "",
 ]
 
-# Forms that are legal and must keep working.
 LEGAL = [("0", 0), ("2", 2), ("007", 7)]
 
 

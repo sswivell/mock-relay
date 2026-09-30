@@ -31,7 +31,6 @@ from mockrelay._13 import _18 as State
 from mockrelay._14 import _10 as start_admin
 from mockrelay.errors import ConfigError, LimitExceeded, SecurityError
 
-# Wire forms that must never resolve outside the fixtures directory.
 TRAVERSAL = [
     "..",
     "../..",
@@ -51,7 +50,6 @@ TRAVERSAL = [
     "C:%5cWindows",
 ]
 
-# Encoded forms that must also be refused, one decode deep.
 ENCODED = [t for t in TRAVERSAL if "%" in t]
 
 

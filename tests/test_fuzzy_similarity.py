@@ -21,13 +21,10 @@ import pytest
 
 from mockrelay._09 import _07, _12, _20
 
-GUARD = 250000  # the length product _20 refuses to run difflib over
+GUARD = 250000
 
-# A shared stem long enough that every pair built from it clears GUARD:
-# 828 * 828 is 685584.
 STEM = "/api/v1/" + "teams/" * 90
 
-# Pairs where one side really is a prefix of the other.
 PREFIX_PAIRS = [
     (STEM, STEM + "users"),
     (STEM + "users", STEM + "users-archive"),
@@ -40,9 +37,6 @@ PREFIX_IDS = ["stem", "suffix", "one-longer", "trailing-char", "deep-path"]
 
 def _product(a: str, b: str) -> int:
     return len(a) * len(b)
-
-
-# The bug itself.
 
 
 @pytest.mark.parametrize("a,b", PREFIX_PAIRS, ids=PREFIX_IDS)
@@ -71,9 +65,6 @@ def test_03_a_long_shared_prefix_still_matches_a_sane_threshold(a, b):
     assert _12(a, b, _07(mode="fuzzy"), "fuzzy") == 100
 
 
-# The shape of the number the guard now returns.
-
-
 @pytest.mark.parametrize("a,b", PREFIX_PAIRS, ids=PREFIX_IDS)
 def test_04_the_guard_scores_by_how_much_of_the_longer_string_is_shared(a, b):
     short, long = sorted((a, b), key=len)
@@ -91,16 +82,12 @@ def test_05_a_longer_tail_scores_lower():
 def test_06_unrelated_long_strings_stay_at_zero():
     assert _20("a" * 600, "b" * 600) == 0.0
     assert _20(STEM, "z" * len(STEM)) == 0.0
-    # Differing at the very first character is as far apart as strings get.
     assert _20("a" + "x" * 600, "b" + "y" * 600) == 0.0
 
 
 def test_07_the_guard_never_calls_a_real_prefix_zero():
     a, b = STEM, STEM + "users"
     assert 0.0 < _20(a, b) < 1.0
-
-
-# Invariants that must hold for every input shape.
 
 
 @pytest.mark.parametrize("a,b", PREFIX_PAIRS, ids=PREFIX_IDS)
@@ -146,17 +133,10 @@ def test_12_the_short_string_case_is_untouched():
         assert _product(a, b) <= GUARD, (a, b)
         assert _20(a, b) < 1.0, (a, b)
         assert _20(a, b) == _20(b, a), (a, b)
-    # difflib is stricter than the guard about short prefixes, because it
-    # charges for the unmatched tail on both sides. That difference is the
-    # cost of not running it, and it is one directional: the guard is the
-    # more generous of the two, never the stricter.
     assert _20("/api/v1/users", "/api/v1/users-archive") < 0.86
     assert _20("/api/v1/users", "/api/v1/users-archive") < _20(
         *sorted((STEM, STEM + "users"), key=len)
     )
-
-
-# The boundary the guard sits on.
 
 
 def test_13_the_two_paths_disagree_on_value_and_agree_on_property():
@@ -168,15 +148,14 @@ def test_13_the_two_paths_disagree_on_value_and_agree_on_property():
     """
     under_a, under_b = "a" * 499, "a" * 501
     over_a, over_b = "a" * 500, "a" * 501
-    assert _product(under_a, under_b) == 249999 <= GUARD  # difflib
-    assert _product(over_a, over_b) == 250500 > GUARD  # the guard
+    assert _product(under_a, under_b) == 249999 <= GUARD
+    assert _product(over_a, over_b) == 250500 > GUARD
 
     for a, b in ((under_a, under_b), (over_a, over_b)):
         assert a != b
         assert 0.0 < _20(a, b) < 1.0
         assert _20(a, b) == _20(b, a)
 
-    # difflib counts the matching block twice; the guard counts it once.
     assert _20(under_a, under_b) == pytest.approx(2 * 499 / 1000)
     assert _20(over_a, over_b) == pytest.approx(500 / 501)
 

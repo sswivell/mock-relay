@@ -139,8 +139,6 @@ class MockRelayError(Exception):
 
     exit_code: ExitCode = EXIT_ERROR
     kind = "Error"
-    #: Stable machine-readable token, safe to switch on in a client.
-    #: Unlike `kind`, which is a human-readable phrase and may be reworded.
     code = "error"
 
     def __init__(

@@ -33,7 +33,6 @@ from mockrelay._11 import _01 as Metrics
 from mockrelay._13 import _18 as State
 from mockrelay._13 import _30 as start
 
-# Two separate header fields, different values. Must be refused.
 CONFLICTING = [
     ["Content-Length: 2", "Content-Length: 5"],
     ["Content-Length: 0", "Content-Length: 99"],
@@ -42,13 +41,11 @@ CONFLICTING = [
     ["Content-Length: 0", "Content-Length: 1", "Content-Length: 2"],
 ]
 
-# One field holding a comma list, differing values. Must be refused too.
 CONFLICTING_JOINED = [
     ["Content-Length: 2, 5"],
     ["Content-Length: 2,5"],
 ]
 
-# Identical duplicates. The RFC permits accepting these.
 IDENTICAL = [
     ["Content-Length: 2", "Content-Length: 2"],
     ["Content-Length: 2, 2"],
@@ -191,8 +188,6 @@ def test_08_a_smuggled_prefix_is_not_left_in_the_buffer(proxy):
                 break
             buf += chunk
         assert b" 400 " in buf.split(b"\r\n", 1)[0], buf[:80]
-        # Read whatever body the server did consume, then confirm the
-        # server is not mid-way through another request.
         sock.settimeout(2)
         try:
             leftover = sock.recv(4096)
