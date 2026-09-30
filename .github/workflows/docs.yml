@@ -64,7 +64,12 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # workflow_dispatch is listed because the trigger above exists to re-run a
+    # deploy by hand; leaving it out would silently skip the deploy job and
+    # report the run as green while the live site kept the previous build.
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     permissions:
       pages: write
