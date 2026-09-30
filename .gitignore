@@ -19,3 +19,5 @@ fixtures/
 venv/
 .idea/
 .vscode/
+# Scratch directory used while capturing demo output. Never committed.
+.tmp_demo/

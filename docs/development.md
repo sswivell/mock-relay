@@ -1,0 +1,136 @@
+# Development Guide
+
+This guide covers local environment setup, running tests, linting, building release packages, and codebase architecture conventions.
+
+---
+
+## Prerequisites
+
+- Python 3.10, 3.11, 3.12, or 3.13
+- Git
+
+---
+
+## Local Setup
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/sswivell/mock-relay.git
+   cd mock-relay
+   ```
+
+2. **Create and activate a virtual environment:**
+
+   ```bash
+   # Linux / macOS
+   python3 -m venv .venv
+   source .venv/bin/activate
+
+   # Windows
+   python -m venv .venv
+   .venv\Scripts\activate
+   ```
+
+3. **Install editable package with development dependencies:**
+
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+   Development dependencies installed from `pyproject.toml` include `pytest`, `ruff==0.16.9`, `mypy`, `build`, and `pip-audit`.
+
+---
+
+## Running Tests
+
+Run the full pytest suite:
+
+```bash
+pytest -q
+```
+
+Run a specific test file or test filter:
+
+```bash
+# Run CLI tests
+pytest tests/test_cli.py
+
+# Run tests matching a keyword
+pytest -k "priority"
+
+# Run match strategy tests
+pytest tests/test_match_strategies.py
+```
+
+---
+
+## Linting and Code Quality
+
+MockRelay pins Ruff to ensure consistent linting across local setups and CI:
+
+```bash
+ruff check .
+```
+
+To run security audit on dependencies:
+
+```bash
+pip-audit
+```
+
+---
+
+## Packaging and Build Verification
+
+Build the source distribution (`.tar.gz`) and binary wheel (`.whl`):
+
+```bash
+python -m build
+```
+
+Verify that the built wheel installs and runs properly:
+
+```bash
+# In a temporary environment or virtualenv:
+pip install dist/mockrelay-*.whl
+mockrelay --version
+```
+
+---
+
+## Code Architecture & Conventions
+
+MockRelay uses a numbered internal module layout (`_01.py` through `_19.py`). This architecture is intentional and load-bearing.
+
+| Module | Responsibility |
+|---|---|
+| `_01.py` | Default settings and theme constants |
+| `_02.py` | Brand key encode/decode |
+| `_03.py` | Color palettes and terminal capability detection |
+| `_04.py` | Terminal UI rendering (tables, boxes, headers, spinners) |
+| `_05.py` | `Config` loading, validation, scoped setting resolution |
+| `_06.py` | Core dataclasses (`MatchSpec`, `Request`, `Response`, `Fixture`) |
+| `_07.py` | Secret redaction (headers and sensitive payload patterns) |
+| `_08.py` | JSON body normalization |
+| `_09.py` | Smart matcher: strategies, ranked scoring, and diagnostics |
+| `_10.py` | `Store`: fixture persistence, directory layout, and IDs |
+| `_11.py` | `Metrics`: request counters and recent-request ring buffer |
+| `_12.py` | Outbound HTTP upstream client and response decoding |
+| `_13.py` | Proxy request handler and HTTP server |
+| `_14.py` | Admin API server & web dashboard |
+| `_15.py` | CLI entry point and command handlers |
+| `_16.py` | Terminal UI facade |
+| `_17.py` | Fixture statistics and age-based cleanup |
+| `_18.py` | Fixture validation |
+| `_19.py` | Machine-readable JSON output emitter |
+| `errors.py` | Structured error types and exit codes |
+| `limits.py` | Proxy buffer, payload, and header limits |
+| `security.py` | Path traversal protection and URL validation |
+
+### Rules for Contributions
+- Python 3.10+ compatibility.
+- Internal functions and classes use numbered identifiers (`_01`, `_02`, ...).
+- Keep code clean and self-explanatory; no inline commentary unless strictly necessary.
+- Every module must maintain a descriptive docstring at the top of the file.
+- Changes to user-facing CLI behavior must be reflected in `docs/cli.md` and `README.md`.

@@ -1,0 +1,1490 @@
+/* ==========================================================================
+   MockRelay documentation theme
+   --------------------------------------------------------------------------
+   Layered on top of Material for MkDocs. Everything here is scoped under
+   .mr-* or under the .md-typeset container so the built-in docs pages keep
+   working unchanged.
+
+   The palette is declared twice: once for the dark scheme, which is the
+   default, and once for the light scheme that Material's toggle switches to.
+   Nothing below hardcodes a background or a text colour, so the light theme
+   is a token swap rather than a second stylesheet.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Design tokens
+   -------------------------------------------------------------------------- */
+
+:root {
+  --mr-radius-sm: 8px;
+  --mr-radius: 12px;
+  --mr-radius-lg: 16px;
+  --mr-max: 1180px;
+  --mr-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --mr-dur: 200ms;
+
+  /* Shared accents: these stay legible on both schemes. */
+  --mr-exact: #34d399;
+  --mr-wildcard: #38bdf8;
+  --mr-regex: #a5b4fc;
+  --mr-fuzzy: #fbbf24;
+  --mr-danger: #fb7185;
+
+  --mr-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mr-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+    Consolas, "Liberation Mono", monospace;
+}
+
+/* Dark is the default scheme. */
+[data-md-color-scheme="slate"] {
+  --mr-bg: #0b0f19;
+  --mr-bg-alt: #070b12;
+  --mr-panel: #111827;
+  --mr-panel-2: #0e1524;
+  --mr-panel-hi: #16203252;
+
+  --mr-line: #1e2a3d;
+  --mr-line-soft: #182235;
+  --mr-line-strong: #2b3a52;
+
+  --mr-fg: #e8edf5;
+  --mr-fg-strong: #f8fafc;
+  --mr-fg-muted: #9aa8bd;
+  --mr-fg-dim: #6b7a91;
+
+  --mr-accent: #38bdf8;
+  --mr-accent-2: #818cf8;
+  --mr-accent-fg: #0b0f19;
+  --mr-accent-wash: #38bdf81a;
+  --mr-accent-line: #38bdf84d;
+
+  --mr-ok: #34d399;
+  --mr-warn: #fbbf24;
+
+  --mr-term-bg: #05080f;
+  --mr-code-inline-bg: #16203a;
+
+  --mr-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --mr-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.65);
+  --mr-shadow-lg: 0 24px 60px -24px rgb(0 0 0 / 0.75);
+
+  --md-default-bg-color: var(--mr-bg);
+  --md-default-fg-color: var(--mr-fg);
+  --md-default-fg-color--light: var(--mr-fg-muted);
+  --md-default-fg-color--lighter: var(--mr-fg-dim);
+  --md-default-fg-color--lightest: #4a5768;
+  --md-primary-fg-color: #131c2c;
+  --md-primary-fg-color--light: #1b2537;
+  --md-primary-bg-color: #38bdf8;
+  --md-primary-bg-color--light: #7dd3fc;
+  --md-accent-fg-color: var(--mr-accent);
+  --md-code-bg-color: var(--mr-term-bg);
+  --md-code-fg-color: #d7e0ee;
+  --md-typeset-a-color: var(--mr-accent);
+}
+
+/* Light scheme: same structure, inverted values. */
+[data-md-color-scheme="default"] {
+  --mr-bg: #ffffff;
+  --mr-bg-alt: #f6f8fb;
+  --mr-panel: #ffffff;
+  --mr-panel-2: #f7f9fc;
+  --mr-panel-hi: #eef2f8;
+
+  --mr-line: #dde4ee;
+  --mr-line-soft: #e8edf4;
+  --mr-line-strong: #c3cedd;
+
+  --mr-fg: #1e293b;
+  --mr-fg-strong: #0b1220;
+  --mr-fg-muted: #55637a;
+  --mr-fg-dim: #6f7d92;
+
+  --mr-accent: #0369a1;
+  --mr-accent-2: #4338ca;
+  --mr-accent-fg: #ffffff;
+  --mr-accent-wash: #0369a114;
+  --mr-accent-line: #0369a140;
+
+  --mr-exact: #047857;
+  --mr-wildcard: #0369a1;
+  --mr-regex: #4338ca;
+  --mr-fuzzy: #b45309;
+  --mr-danger: #be123c;
+
+  --mr-ok: #047857;
+  --mr-warn: #b45309;
+
+  --mr-term-bg: #0d1524;
+  --mr-code-inline-bg: #eef2f7;
+
+  --mr-shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06);
+  --mr-shadow: 0 10px 28px -14px rgb(15 23 42 / 0.28);
+  --mr-shadow-lg: 0 24px 56px -28px rgb(15 23 42 / 0.32);
+
+  --md-default-bg-color: var(--mr-bg);
+  --md-default-fg-color: var(--mr-fg);
+  --md-default-fg-color--light: var(--mr-fg-muted);
+  --md-default-fg-color--lighter: var(--mr-fg-dim);
+  --md-default-fg-color--lightest: #94a3b8;
+  --md-primary-fg-color: #1e293b;
+  --md-primary-fg-color--light: #334155;
+  --md-primary-bg-color: var(--mr-accent);
+  --md-primary-bg-color--light: #0284c7;
+  --md-accent-fg-color: var(--mr-accent);
+  --md-code-bg-color: var(--mr-term-bg);
+  --md-code-fg-color: #d7e0ee;
+  --md-typeset-a-color: var(--mr-accent);
+}
+
+/* --------------------------------------------------------------------------
+   2. Base
+   -------------------------------------------------------------------------- */
+
+body {
+  font-family: var(--mr-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+.md-typeset {
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  font-weight: 700;
+  letter-spacing: -0.021em;
+  line-height: 1.2;
+  color: var(--mr-fg-strong);
+}
+
+.md-typeset h2 {
+  font-size: 1.62rem;
+  margin-top: 2.4em;
+}
+
+.md-typeset h3 {
+  font-size: 1.22rem;
+}
+
+.md-typeset code {
+  font-family: var(--mr-font-mono);
+  font-size: 0.85em;
+}
+
+.md-typeset :not(pre) > code {
+  background: var(--mr-code-inline-bg);
+  border: 1px solid var(--mr-line-soft);
+  border-radius: 5px;
+  padding: 0.1em 0.36em;
+  color: var(--mr-fg-strong);
+  word-break: break-word;
+}
+
+.md-typeset a {
+  text-underline-offset: 0.18em;
+}
+
+.md-typeset a:hover {
+  text-decoration: underline;
+}
+
+.md-typeset table:not([class]) {
+  font-size: 0.86rem;
+  border-radius: var(--mr-radius-sm);
+}
+
+.md-typeset table:not([class]) th {
+  background: var(--mr-panel-2);
+  font-weight: 600;
+}
+
+.md-typeset hr {
+  border-color: var(--mr-line-soft);
+}
+
+/* One consistent focus ring for every interactive element on the site. */
+.md-typeset :focus-visible,
+.mr-copy:focus-visible,
+.mr-btn:focus-visible,
+.mr-flow-node:focus-visible,
+.mr-doc-card:focus-visible {
+  outline: 2px solid var(--mr-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Material puts tab labels in a tab row; give it the site radius. */
+.md-typeset .tabbed-set > input + label {
+  font-weight: 600;
+}
+
+.md-typeset .tabbed-labels > label {
+  font-family: var(--mr-font-mono);
+  font-size: 0.72rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Header
+   -------------------------------------------------------------------------- */
+
+.md-header {
+  background: color-mix(in srgb, var(--mr-bg) 82%, transparent);
+  backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid var(--mr-line-soft);
+}
+
+.md-header__inner {
+  max-width: var(--mr-max);
+  margin: 0 auto;
+}
+
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  height: 1.5rem;
+  width: auto;
+}
+
+.md-header__title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 0.95rem;
+}
+
+.md-tabs {
+  background: transparent;
+  border-bottom: 1px solid var(--mr-line-soft);
+}
+
+/* --------------------------------------------------------------------------
+   4. Page shell and sections
+   -------------------------------------------------------------------------- */
+
+.md-content__inner {
+  max-width: var(--mr-max);
+  padding-bottom: 4rem;
+}
+
+.mr-section {
+  padding: 4rem 0;
+  border-top: 1px solid var(--mr-line-soft);
+  scroll-margin-top: 5rem;
+}
+
+.mr-section:first-of-type {
+  border-top: 0;
+}
+
+.mr-section-head {
+  max-width: 62ch;
+  margin-bottom: 2.5rem;
+}
+
+.mr-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--mr-accent);
+  margin-bottom: 0.7rem;
+}
+
+.mr-eyebrow::before {
+  content: "";
+  width: 1.5rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.mr-section-title {
+  font-size: clamp(1.6rem, 1.15rem + 1.5vw, 2.15rem);
+  line-height: 1.18;
+  letter-spacing: -0.028em;
+  margin: 0 0 0.75rem;
+  color: var(--mr-fg-strong);
+}
+
+.mr-section-lede {
+  font-size: 1.02rem;
+  line-height: 1.68;
+  color: var(--mr-fg-muted);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   5. Hero
+   -------------------------------------------------------------------------- */
+
+.mr-hero {
+  position: relative;
+  padding: 3.25rem 0 3.75rem;
+}
+
+/* A single restrained light source behind the hero, not a graphic. */
+.mr-hero::before {
+  content: "";
+  position: absolute;
+  inset: -40% 50% 40% -20%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--mr-accent) 16%, transparent),
+    transparent 72%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+.mr-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
+}
+
+.mr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.24rem 0.66rem;
+  border: 1px solid var(--mr-line);
+  border-radius: 999px;
+  background: var(--mr-panel-2);
+  font-size: 0.73rem;
+  font-weight: 550;
+  color: var(--mr-fg-muted);
+  line-height: 1.5;
+}
+
+.mr-badge--accent {
+  border-color: var(--mr-accent-line);
+  background: var(--mr-accent-wash);
+  color: var(--mr-accent);
+}
+
+.mr-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mr-ok);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mr-ok) 22%, transparent);
+}
+
+.mr-hero-title {
+  font-size: clamp(2.1rem, 1.2rem + 3.4vw, 3.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+  margin: 0 0 1.1rem;
+  color: var(--mr-fg-strong);
+  max-width: 20ch;
+}
+
+.mr-hero-title em {
+  font-style: normal;
+  background: linear-gradient(100deg, var(--mr-accent), var(--mr-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.mr-hero-lede {
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.15rem);
+  line-height: 1.65;
+  color: var(--mr-fg-muted);
+  max-width: 60ch;
+  margin: 0 0 2rem;
+}
+
+.mr-install {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: stretch;
+  margin-bottom: 1.5rem;
+}
+
+.mr-install-code {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: min(100%, 21rem);
+  padding: 0.7rem 0.5rem 0.7rem 0.95rem;
+  background: var(--mr-term-bg);
+  border: 1px solid var(--mr-line);
+  border-radius: var(--mr-radius);
+  font-family: var(--mr-font-mono);
+  font-size: 0.92rem;
+  color: var(--mr-fg-strong);
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mr-install-code::-webkit-scrollbar {
+  display: none;
+}
+
+.mr-install-prompt {
+  color: var(--mr-accent);
+  user-select: none;
+  flex: none;
+}
+
+/* Sits directly under .mr-install, so that block's trailing margin is
+   collapsed into the gap between the two. */
+.mr-install + .mr-install-note {
+  margin-top: -0.85rem;
+}
+
+.mr-install-note {
+  margin: 0 0 1.5rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--mr-fg-muted);
+  max-width: 44rem;
+}
+
+.mr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.mr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.62rem 1.15rem;
+  border-radius: var(--mr-radius-sm);
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition:
+    background-color var(--mr-dur) var(--mr-ease),
+    border-color var(--mr-dur) var(--mr-ease),
+    color var(--mr-dur) var(--mr-ease),
+    transform var(--mr-dur) var(--mr-ease);
+}
+
+.mr-btn svg {
+  width: 1em;
+  height: 1em;
+  flex: none;
+}
+
+.mr-btn--primary {
+  background: var(--mr-accent);
+  color: var(--mr-accent-fg) !important;
+  border-color: var(--mr-accent);
+}
+
+.mr-btn--primary:hover {
+  background: color-mix(in srgb, var(--mr-accent) 86%, white);
+  color: var(--mr-accent-fg) !important;
+  transform: translateY(-1px);
+}
+
+[data-md-color-scheme="slate"] .mr-btn--primary:hover {
+  background: color-mix(in srgb, var(--mr-accent) 88%, white);
+}
+
+.mr-btn--ghost {
+  background: var(--mr-panel-2);
+  color: var(--mr-fg) !important;
+  border-color: var(--mr-line);
+}
+
+.mr-btn--ghost:hover {
+  background: var(--mr-panel-hi);
+  border-color: var(--mr-line-strong);
+  color: var(--mr-fg-strong) !important;
+  transform: translateY(-1px);
+}
+
+/* Copy button that rides on the install pill. */
+.mr-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex: none;
+  align-self: stretch;
+  margin: -0.2rem;
+  padding: 0 0.65rem;
+  min-width: 2.5rem;
+  background: transparent;
+  border: 1px solid var(--mr-line);
+  border-radius: 7px;
+  color: var(--mr-fg-muted);
+  font-family: var(--mr-font-mono);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition:
+    color var(--mr-dur) var(--mr-ease),
+    border-color var(--mr-dur) var(--mr-ease),
+    background-color var(--mr-dur) var(--mr-ease);
+}
+
+.mr-copy:hover {
+  color: var(--mr-accent);
+  border-color: var(--mr-accent-line);
+  background: var(--mr-accent-wash);
+}
+
+.mr-copy[data-state="done"] {
+  color: var(--mr-ok);
+  border-color: color-mix(in srgb, var(--mr-ok) 45%, transparent);
+}
+
+.mr-copy[data-state="error"] {
+  color: var(--mr-danger);
+  border-color: color-mix(in srgb, var(--mr-danger) 45%, transparent);
+}
+
+.mr-copy svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   6. Workflow diagram
+   -------------------------------------------------------------------------- */
+
+.mr-flow {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  margin: 0 auto;
+  max-width: 46rem;
+}
+
+.mr-flow-node {
+  width: 100%;
+  max-width: 26rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--mr-panel);
+  border: 1px solid var(--mr-line);
+  border-radius: var(--mr-radius);
+  box-shadow: var(--mr-shadow-sm);
+  text-align: center;
+}
+
+.mr-flow-node--relay {
+  border-color: var(--mr-accent-line);
+  background:
+    linear-gradient(var(--mr-panel), var(--mr-panel)) padding-box,
+    linear-gradient(120deg, var(--mr-accent), var(--mr-accent-2)) border-box;
+  border: 1px solid transparent;
+  box-shadow: var(--mr-shadow);
+}
+
+.mr-flow-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: var(--mr-fg-strong);
+  letter-spacing: -0.01em;
+}
+
+.mr-flow-sub {
+  display: block;
+  margin-top: 0.2rem;
+  font-family: var(--mr-font-mono);
+  font-size: 0.76rem;
+  color: var(--mr-fg-dim);
+  word-break: break-word;
+}
+
+.mr-flow-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.5rem 0;
+  color: var(--mr-fg-dim);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.mr-flow-arrow svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--mr-accent);
+  animation: mr-drop 2.6s var(--mr-ease) infinite;
+}
+
+@keyframes mr-drop {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.75;
+  }
+  35% {
+    transform: translateY(3px);
+    opacity: 1;
+  }
+}
+
+/* The record/replay fork. */
+.mr-fork {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+  max-width: 34rem;
+  position: relative;
+}
+
+.mr-fork::before {
+  content: "";
+  position: absolute;
+  top: -0.85rem;
+  left: 25%;
+  right: 25%;
+  height: 0.85rem;
+  border-top: 1px solid var(--mr-line-strong);
+  border-left: 1px solid var(--mr-line-strong);
+  border-right: 1px solid var(--mr-line-strong);
+  border-radius: 6px 6px 0 0;
+}
+
+.mr-branch {
+  padding: 0.95rem 1rem;
+  background: var(--mr-panel-2);
+  border: 1px solid var(--mr-line);
+  border-radius: var(--mr-radius);
+  text-align: center;
+}
+
+.mr-branch--record {
+  border-color: color-mix(in srgb, var(--mr-wildcard) 38%, transparent);
+}
+
+.mr-branch--replay {
+  border-color: color-mix(in srgb, var(--mr-exact) 38%, transparent);
+}
+
+.mr-branch-tag {
+  display: inline-block;
+  font-family: var(--mr-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.45rem;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+}
+
+.mr-branch--record .mr-branch-tag {
+  color: var(--mr-wildcard);
+  background: color-mix(in srgb, var(--mr-wildcard) 14%, transparent);
+}
+
+.mr-branch--replay .mr-branch-tag {
+  color: var(--mr-exact);
+  background: color-mix(in srgb, var(--mr-exact) 14%, transparent);
+}
+
+.mr-branch-text {
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--mr-fg-muted);
+  margin: 0;
+}
+
+.mr-fixture-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  background: var(--mr-term-bg);
+  border: 1px solid var(--mr-line);
+  font-family: var(--mr-font-mono);
+  font-size: 0.7rem;
+  color: var(--mr-fg-muted);
+}
+
+.mr-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 0.9rem;
+  margin-top: 2.25rem;
+}
+
+.mr-mode {
+  padding: 1.15rem 1.25rem;
+  background: var(--mr-panel);
+  border: 1px solid var(--mr-line);
+  border-radius: var(--mr-radius);
+  border-top: 2px solid var(--mr-line-strong);
+}
+
+.mr-mode[data-mode="record"] { border-top-color: var(--mr-wildcard); }
+.mr-mode[data-mode="replay"] { border-top-color: var(--mr-exact); }
+.mr-mode[data-mode="passthrough"] { border-top-color: var(--mr-fg-dim); }
+.mr-mode[data-mode="hybrid"] { border-top-color: var(--mr-fuzzy); }
+
+.mr-mode-name {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--mr-font-mono);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--mr-fg-strong);
+  margin-bottom: 0.4rem;
+}
+
+.mr-mode-name::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.mr-mode[data-mode="record"] .mr-mode-name { color: var(--mr-wildcard); }
+.mr-mode[data-mode="replay"] .mr-mode-name { color: var(--mr-exact); }
+.mr-mode[data-mode="passthrough"] .mr-mode-name { color: var(--mr-fg-dim); }
+.mr-mode[data-mode="hybrid"] .mr-mode-name { color: var(--mr-fuzzy); }
+
+.mr-mode-text {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--mr-fg-muted);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   7. Reason cards
+   -------------------------------------------------------------------------- */
+
+.mr-reasons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
+  gap: 1rem;
+}
+
+.mr-reason {
+  position: relative;
+  padding: 1.35rem 1.4rem;
+  background: var(--mr-panel);
+  border: 1px solid var(--mr-line);
+  border-radius: var(--mr-radius);
+  transition:
+    border-color var(--mr-dur) var(--mr-ease),
+    transform var(--mr-dur) var(--mr-ease),
+    box-shadow var(--mr-dur) var(--mr-ease);
+}
+
+.mr-reason:hover {
+  border-color: var(--mr-accent-line);
+  transform: translateY(-2px);
+  box-shadow: var(--mr-shadow);
+}
+
+.mr-reason-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-bottom: 0.85rem;
+  border-radius: var(--mr-radius-sm);
+  background: var(--mr-accent-wash);
+  color: var(--mr-accent);
+}
+
+.mr-reason-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.mr-reason-title {
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  color: var(--mr-fg-strong);
+  margin: 0 0 0.35rem;
+}
+
+.mr-reason-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--mr-fg-muted);
+  margin: 0;
+}
+
+.mr-reason-text code {
+  font-size: 0.82em;
+}
+
+/* --------------------------------------------------------------------------
+   8. Matching showcase
+   -------------------------------------------------------------------------- */
+
+.mr-match {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.mr-panel {
+  background: var(--mr-panel);
+  border: 1px solid var(--mr-line);
+  border-radius: var(--mr-radius);
+  overflow: hidden;
+}
+
+.mr-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.95rem;
+  background: var(--mr-panel-2);
+  border-bottom: 1px solid var(--mr-line-soft);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mr-fg-dim);
+}
+
+.mr-panel-body {
+  padding: 1rem 1.1rem;
+}
+
+.mr-facet-list {
+  list-style: none;
+  margin: 0 0 1.1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.mr-facet {
+  display: grid;
+  grid-template-columns: 4.25rem 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.55rem 0.7rem;
+  background: var(--mr-panel-2);
+  border: 1px solid var(--mr-line-soft);
+  border-left: 2px solid var(--mr-accent);
+  border-radius: var(--mr-radius-sm);
+}
+
+.mr-facet-name {
+  font-family: var(--mr-font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--mr-accent);
+}
+
+.mr-facet-body {
+  font-family: var(--mr-font-mono);
+  font-size: 0.76rem;
+  line-height: 1.55;
+  color: var(--mr-fg-muted);
+  word-break: break-word;
+}
+
+.mr-facet-body b {
+  color: var(--mr-fg-strong);
+  font-weight: 600;
+}
+
+.mr-strategy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.mr-strategy-table th {
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--mr-fg-dim);
+  padding: 0 0.5rem 0.45rem 0;
+  border-bottom: 1px solid var(--mr-line-soft);
+}
+
+.mr-strategy-table td {
+  padding: 0.5rem 0.5rem 0.5rem 0;
+  border-bottom: 1px solid var(--mr-line-soft);
+  vertical-align: top;
+  color: var(--mr-fg-muted);
+}
+
+.mr-strategy-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.mr-strategy-table code {
+  font-family: var(--mr-font-mono);
+  font-size: 0.74rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--mr-fg-strong);
+  word-break: break-all;
+}
+
+.mr-tag {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 5px;
+  font-family: var(--mr-font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.mr-tag--exact { color: var(--mr-exact); background: color-mix(in srgb, var(--mr-exact) 15%, transparent); }
+.mr-tag--wildcard { color: var(--mr-wildcard); background: color-mix(in srgb, var(--mr-wildcard) 15%, transparent); }
+.mr-tag--regex { color: var(--mr-regex); background: color-mix(in srgb, var(--mr-regex) 15%, transparent); }
+.mr-tag--fuzzy { color: var(--mr-fuzzy); background: color-mix(in srgb, var(--mr-fuzzy) 15%, transparent); }
+.mr-tag--priority { color: var(--mr-accent-2); background: color-mix(in srgb, var(--mr-accent-2) 15%, transparent); }
+
+/* Terminal that mirrors real `mockrelay match` output. */
+.mr-term {
+  background: var(--mr-term-bg);
+  font-family: var(--mr-font-mono);
+  font-size: 0.74rem;
+  line-height: 1.65;
+  color: #c8d3e4;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+}
+
+.mr-term-line {
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.28rem 0.4rem;
+  border-radius: 5px;
+  border-left: 2px solid transparent;
+  transition:
+    background-color 420ms var(--mr-ease),
+    border-color 420ms var(--mr-ease);
+}
+
+.mr-term-line[data-active="true"] {
+  background: color-mix(in srgb, var(--mr-accent) 9%, transparent);
+  border-left-color: var(--mr-accent);
+}
+
+.mr-term-h {
+  color: #5b6b83;
+  flex: none;
+}
+
+.mr-term-c {
+  color: var(--mr-fg-muted);
+  flex: 1;
+  min-width: 0;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mr-term-yes { color: #7ee0b8; }
+.mr-term-no { color: #6b7a91; }
+.mr-term-win { color: var(--mr-exact); font-weight: 700; }
+.mr-term-exact { color: #6ee7b7; }
+.mr-term-wildcard { color: #7dd3fc; }
+.mr-term-regex { color: #c7d2fe; }
+.mr-term-fuzzy { color: #fcd34d; }
+
+.mr-rank-caption {
+  min-height: 2.4em;
+  padding: 0.7rem 0.95rem;
+  border-top: 1px solid var(--mr-line-soft);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--mr-fg-muted);
+  background: var(--mr-panel-2);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   9. Quick start
+   -------------------------------------------------------------------------- */
+
+.mr-steps {
+  counter-reset: mr-step;
+  display: grid;
+  gap: 1rem;
+}
+
+.mr-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--mr-panel);
+  border: 1px solid var(--mr-line);
+  border-radius: var(--mr-radius);
+}
+
+.mr-step::before {
+  counter-increment: mr-step;
+  content: counter(mr-step);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--mr-accent-wash);
+  border: 1px solid var(--mr-accent-line);
+  color: var(--mr-accent);
+  font-family: var(--mr-font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.mr-step-title {
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--mr-fg-strong);
+  margin: 0.25rem 0 0.2rem;
+}
+
+.mr-step-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--mr-fg-muted);
+  margin: 0 0 0.75rem;
+}
+
+.mr-step:last-child .mr-step-text {
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   10. Feature grid
+   -------------------------------------------------------------------------- */
+
+.mr-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr));
+  gap: 0.85rem;
+}
+
+.mr-feature {
+  padding: 1.1rem 1.2rem;
+  background: var(--mr-panel-2);
+  border: 1px solid var(--mr-line-soft);
+  border-radius: var(--mr-radius);
+  transition:
+    border-color var(--mr-dur) var(--mr-ease),
+    background-color var(--mr-dur) var(--mr-ease);
+}
+
+.mr-feature:hover {
+  border-color: var(--mr-accent-line);
+  background: var(--mr-panel);
+}
+
+.mr-feature-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  font-weight: 650;
+  color: var(--mr-fg-strong);
+  margin: 0 0 0.3rem;
+}
+
+.mr-feature-title svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  color: var(--mr-accent);
+  flex: none;
+}
+
+.mr-feature-text {
+  font-size: 0.83rem;
+  line-height: 1.55;
+  color: var(--mr-fg-muted);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   11. Documentation index
+   -------------------------------------------------------------------------- */
+
+.mr-docs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+}
+
+.mr-doc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.95rem 1.05rem;
+  background: var(--mr-panel);
+  border: 1px solid var(--mr-line);
+  border-radius: var(--mr-radius);
+  text-decoration: none !important;
+  color: inherit;
+  transition:
+    border-color var(--mr-dur) var(--mr-ease),
+    transform var(--mr-dur) var(--mr-ease),
+    box-shadow var(--mr-dur) var(--mr-ease);
+}
+
+.mr-doc-card:hover {
+  border-color: var(--mr-accent-line);
+  transform: translateY(-2px);
+  box-shadow: var(--mr-shadow);
+  text-decoration: none !important;
+}
+
+.mr-doc-card-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 650;
+  color: var(--mr-fg-strong);
+  letter-spacing: -0.01em;
+}
+
+.mr-doc-card-name svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--mr-fg-dim);
+  flex: none;
+  transition: transform var(--mr-dur) var(--mr-ease);
+}
+
+.mr-doc-card:hover .mr-doc-card-name svg {
+  color: var(--mr-accent);
+  transform: translateX(3px);
+}
+
+.mr-doc-card-text {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--mr-fg-muted);
+  margin: 0;
+}
+
+.mr-doc-card-group {
+  grid-column: 1 / -1;
+  margin: 1.1rem 0 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mr-fg-dim);
+}
+
+.mr-doc-card-group:first-child {
+  margin-top: 0;
+}
+
+/* --------------------------------------------------------------------------
+   12. Project / GitHub callout
+   -------------------------------------------------------------------------- */
+
+.mr-cta {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: center;
+  padding: 2.25rem 2.25rem;
+  background: var(--mr-panel);
+  border: 1px solid var(--mr-line);
+  border-radius: var(--mr-radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.mr-cta::after {
+  content: "";
+  position: absolute;
+  inset: auto -30% -70% 40%;
+  height: 100%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--mr-accent-2) 15%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.mr-cta-title {
+  font-size: 1.4rem;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.6rem;
+  color: var(--mr-fg-strong);
+}
+
+.mr-cta-text {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--mr-fg-muted);
+  margin: 0 0 1.25rem;
+  max-width: 46ch;
+}
+
+.mr-cta .mr-actions {
+  position: relative;
+  z-index: 1;
+}
+
+.mr-cta-side {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.mr-fact {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--mr-panel-2);
+  border: 1px solid var(--mr-line-soft);
+  border-radius: var(--mr-radius-sm);
+  font-size: 0.82rem;
+}
+
+.mr-fact dt {
+  flex: none;
+  width: 7.5rem;
+  color: var(--mr-fg-dim);
+  font-weight: 550;
+}
+
+.mr-fact dd {
+  margin: 0;
+  font-family: var(--mr-font-mono);
+  font-size: 0.78rem;
+  color: var(--mr-fg-strong);
+  min-width: 0;
+  word-break: break-word;
+}
+
+.mr-fact a {
+  word-break: break-all;
+}
+
+/* --------------------------------------------------------------------------
+   13. Utilities
+   -------------------------------------------------------------------------- */
+
+/* Visible to assistive tech, invisible on screen. */
+.mr-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mr-note {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  padding: 0.8rem 1rem;
+  background: var(--mr-panel-2);
+  border: 1px solid var(--mr-line-soft);
+  border-left: 2px solid var(--mr-accent);
+  border-radius: var(--mr-radius-sm);
+  font-size: 0.83rem;
+  line-height: 1.6;
+  color: var(--mr-fg-muted);
+}
+
+.mr-note svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  margin-top: 0.22rem;
+  color: var(--mr-accent);
+}
+
+.mr-note p {
+  margin: 0;
+}
+
+/* Scroll reveal. Only ever *adds* motion, and is skipped entirely when the
+   visitor has asked for reduced motion. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 520ms var(--mr-ease),
+    transform 520ms var(--mr-ease);
+}
+
+[data-reveal][data-revealed="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .mr-flow-arrow svg {
+    animation: none;
+  }
+
+  .mr-term-line {
+    transition: none;
+  }
+
+  .mr-btn,
+  .mr-reason,
+  .mr-doc-card {
+    transition: none;
+  }
+
+  .mr-btn:hover,
+  .mr-reason:hover,
+  .mr-doc-card:hover {
+    transform: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   14. Responsive
+   -------------------------------------------------------------------------- */
+
+@media screen and (max-width: 60rem) {
+  .mr-match,
+  .mr-cta {
+    grid-template-columns: 1fr;
+  }
+
+  .mr-cta {
+    padding: 1.75rem 1.5rem;
+  }
+}
+
+@media screen and (max-width: 44.984375em) {
+  .mr-section {
+    padding: 2.75rem 0;
+  }
+
+  .mr-hero {
+    padding: 2rem 0 2.5rem;
+  }
+
+  .mr-fork {
+    grid-template-columns: 1fr;
+    max-width: 26rem;
+  }
+
+  /* On one column the fork's elbow is a straight line, not a bracket. */
+  .mr-fork::before {
+    left: 50%;
+    right: auto;
+    width: 1px;
+    height: 0.85rem;
+    border-top: 0;
+    border-right: 0;
+    border-left: 1px solid var(--mr-line-strong);
+    border-radius: 0;
+  }
+
+  .mr-step {
+    grid-template-columns: 1.75rem 1fr;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .mr-step::before {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.75rem;
+  }
+
+  .mr-facet {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+
+  .mr-fact {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .mr-fact dt {
+    width: auto;
+  }
+
+  .mr-install-code {
+    font-size: 0.82rem;
+  }
+
+  .mr-term {
+    font-size: 0.68rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   15. Print
+   -------------------------------------------------------------------------- */
+
+@media print {
+  .mr-hero::before,
+  .mr-cta::after {
+    display: none;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .md-typeset a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.75em;
+    word-break: break-all;
+  }
+}

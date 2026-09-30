@@ -1,10 +1,127 @@
 site_name: MockRelay
+site_description: >-
+  Record real HTTP traffic once, replay it offline and deterministically.
+  A local HTTP proxy with ranked fixture matching, redaction, and a CI-friendly
+  CLI.
+site_author: sswivell
 site_url: https://sswivell.github.io/mock-relay/
 repo_url: https://github.com/sswivell/mock-relay
+repo_name: sswivell/mock-relay
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; sswivell - MIT licensed
 
 theme:
   name: material
+  language: en
+  custom_dir: docs/overrides
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
   palette:
-    - scheme: slate
-      primary: light blue
-      accent: cyan
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - announce.dismiss
+    - content.code.copy
+    - content.tabs.link
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/copy.js
+  - javascripts/nav.js
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/sswivell/mock-relay
+      name: MockRelay on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/mockrelay/
+      name: MockRelay on PyPI
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Link to this section
+  - pymdownx.betterem
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+plugins:
+  - search:
+      lang: en
+      separator: '[\s\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Core Concepts:
+      - Operating Modes: modes.md
+      - Smart Matching: matching.md
+      - Fixtures & Redaction: fixtures.md
+  - Reference:
+      - CLI Reference: cli.md
+      - Configuration: configuration.md
+      - Admin API & UI: admin.md
+      - Architecture: architecture.md
+  - Guides:
+      - Common Recipes: recipes.md
+      - Demo Script: demo.md
+      - Development: development.md
