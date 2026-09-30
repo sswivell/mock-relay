@@ -18,13 +18,9 @@ from urllib.parse import urldefrag
 
 REPO = Path(__file__).resolve().parent.parent
 
-# Link shapes that are not site-internal and must be skipped rather than
-# resolved. `is_external` recognises the subset that is worth counting.
 EXTERNAL_PREFIXES = ("http://", "https://", "mailto:", "tel:")
 NON_RESOLVABLE_PREFIXES = ("//", "#", "data:")
 
-# Fenced blocks, including ```bash ... ```, and inline code spans. Anything
-# inside them is sample text, not a real link.
 FENCE_RE = re.compile(r"^(\s*)(`{3,}|~{3,})", re.MULTILINE)
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 HTML_ATTR_RE = re.compile(r"""(?:href|src)\s*=\s*["']([^"']+)["']""", re.I)
@@ -98,8 +94,6 @@ def resolve(ref: str, source: Path) -> Path | None:
     if candidate.is_file():
         return candidate
 
-    # A link may omit the .md suffix, or aim at a directory that MkDocs will
-    # turn into an index.html.
     for suffix in (".md", "/index.md", ".html", "/"):
         alt = Path(str(candidate) + suffix)
         if alt.is_file():
@@ -144,16 +138,12 @@ def main(argv: list[str]) -> int:
             if resolve(ref, page) is None:
                 failures.append(f"{rel}: link target not found -> {ref}")
 
-    # Files that exist but are not reachable from the nav are the usual cause
-    # of a page quietly falling out of the documentation.
     if config.is_file():
         nav = nav_targets(read(config))
         for page in pages:
             rel_in_docs = page.relative_to(docs_dir).as_posix()
             if rel_in_docs in nav:
                 continue
-            # The homepage is always the nav's first entry; accept it under
-            # either of the names people use for it.
             if rel_in_docs == "index.md" and "index.md" in nav:
                 continue
             if page.name == "README.md":

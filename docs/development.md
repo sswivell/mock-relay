@@ -99,6 +99,35 @@ mockrelay --version
 
 ---
 
+## Building the Documentation
+
+The site is plain MkDocs with the theme it ships with. There is no custom CSS
+and no JavaScript.
+
+```bash
+pip install -e ".[docs]"
+python -m mkdocs serve          # live preview on http://127.0.0.1:8000
+python -m mkdocs build --strict # writes ./site
+```
+
+`--strict` turns a broken internal link into a build failure. Run the nav check
+too, which catches a page that was added to `docs/` and forgotten in the nav:
+
+```bash
+python scripts/check_docs_nav.py
+```
+
+Both run in CI before the GitHub Pages deploy.
+
+The social preview card is committed as `docs/assets/social-preview.png`. If you
+edit its SVG, regenerate the PNG:
+
+```bash
+python scripts/make_social_preview.py
+```
+
+---
+
 ## Code Architecture & Conventions
 
 MockRelay uses a numbered internal module layout (`_01.py` through `_19.py`). This architecture is intentional and load-bearing.
@@ -119,14 +148,18 @@ MockRelay uses a numbered internal module layout (`_01.py` through `_19.py`). Th
 | `_12.py` | Outbound HTTP upstream client and response decoding |
 | `_13.py` | Proxy request handler and HTTP server |
 | `_14.py` | Admin API server & web dashboard |
-| `_15.py` | CLI entry point and command handlers |
-| `_16.py` | Terminal UI facade |
-| `_17.py` | Fixture statistics and age-based cleanup |
-| `_18.py` | Fixture validation |
-| `_19.py` | Machine-readable JSON output emitter |
-| `errors.py` | Structured error types and exit codes |
-| `limits.py` | Proxy buffer, payload, and header limits |
-| `security.py` | Path traversal protection and URL validation |
+| `_15.py` | CLI entry point and argparse-based command handlers |
+| `_16.py` | Demo bootstrap: settings and CLI helpers used by the examples |
+| `_17.py` | Fixture counting helpers for status output |
+| `_18.py` | Validation: load a config and fixture tree, describe what is wrong |
+| `_19.py` | Machine-readable JSON output for the CLI |
+| `errors.py` | Exception types, exit codes, and user-facing error rendering |
+| `limits.py` | Resource limits (buffer, payload, and header sizes) |
+| `security.py` | Filesystem, network, and header safety primitives |
+
+The three non-numbered modules live in `mockrelay/` alongside the numbered
+ones. `docs/architecture.md` carries a terse role-per-file map plus the request
+and matching flow; this table is the detailed one.
 
 ### Rules for Contributions
 - Python 3.10+ compatibility.

@@ -11,108 +11,26 @@ edit_uri: edit/main/docs/
 copyright: Copyright &copy; sswivell - MIT licensed
 
 theme:
-  name: material
-  language: en
+  name: mkdocs
+  nav_style: light
+  color_mode: light
   custom_dir: docs/overrides
-  logo: assets/logo.svg
   favicon: assets/logo.svg
-  palette:
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/brightness-7
-        name: Switch to light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/brightness-4
-        name: Switch to dark mode
-  font:
-    text: Inter
-    code: JetBrains Mono
-  features:
-    - announce.dismiss
-    - content.code.copy
-    - content.tabs.link
-    - navigation.footer
-    - navigation.indexes
-    - navigation.instant
-    - navigation.instant.progress
-    - navigation.sections
-    - navigation.top
-    - navigation.tracking
-    - search.highlight
-    - search.share
-    - search.suggest
-    - toc.follow
-
-extra_css:
-  - stylesheets/extra.css
-
-extra_javascript:
-  - javascripts/copy.js
-  - javascripts/nav.js
 
 extra:
   generator: false
-  # No PyPI link here on purpose: the project is not published yet, and a
-  # social link that 404s is worse than no link. Re-add it at publish time.
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/sswivell/mock-relay
-      name: MockRelay on GitHub
-    - icon: fontawesome/brands/github
-      link: https://github.com/sswivell/mock-relay/discussions
-      name: MockRelay discussions
-    - icon: material/source-branch
-      link: https://github.com/sswivell/mock-relay/blob/main/CHANGELOG.md
-      name: MockRelay changelog
 
 markdown_extensions:
-  - abbr
   - admonition
   - attr_list
   - def_list
   - footnotes
-  - md_in_html
   - tables
   - toc:
       permalink: true
-      permalink_title: Link to this section
-  - pymdownx.betterem
-  - pymdownx.caret
-  - pymdownx.details
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.keys
-  - pymdownx.mark
-  - pymdownx.smartsymbols
-  - pymdownx.snippets
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - pymdownx.tilde
 
 plugins:
-  - search:
-      lang: en
-      separator: '[\s\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - search
 
 nav:
   - Home: index.md

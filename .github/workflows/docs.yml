@@ -6,8 +6,6 @@ on:
     paths:
       - "docs/**"
       - "mkdocs.yml"
-      # pyproject.toml pins the docs toolchain, and the nav gate below is
-      # part of this workflow, so a change to either has to re-run the build.
       - "pyproject.toml"
       - "scripts/check_docs_nav.py"
       - ".github/workflows/docs.yml"
@@ -18,14 +16,11 @@ on:
       - "pyproject.toml"
       - "scripts/check_docs_nav.py"
       - ".github/workflows/docs.yml"
-  # Lets a deploy be re-run from the Actions tab without pushing a commit.
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# One deployment at a time. A newer push supersedes an in-flight run rather
-# than racing it to publish.
 concurrency:
   group: docs-${{ github.ref }}
   cancel-in-progress: true
@@ -48,9 +43,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[docs]"
 
-      # --strict turns a broken internal link, a missing nav entry, or an
-      # unresolvable reference into a build failure instead of a warning that
-      # scrolls past.
       - name: Build
         run: mkdocs build --strict
 
@@ -64,9 +56,6 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     needs: build
-    # workflow_dispatch is listed because the trigger above exists to re-run a
-    # deploy by hand; leaving it out would silently skip the deploy job and
-    # report the run as green while the live site kept the previous build.
     if: >-
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
