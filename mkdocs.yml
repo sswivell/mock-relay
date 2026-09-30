@@ -28,6 +28,8 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
+  - codehilite:
+      guess_lang: false
 
 plugins:
   - search
