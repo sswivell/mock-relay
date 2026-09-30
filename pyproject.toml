@@ -15,7 +15,15 @@ keywords = [
   "fixtures",
   "testing",
   "api-mocking",
+  "http-mocking",
   "mock-server",
+  "vcr",
+  "record-replay",
+  "http-recording",
+  "api-testing",
+  "integration-testing",
+  "deterministic",
+  "ci",
   "developer-tools",
 ]
 classifiers = [
@@ -30,6 +38,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Software Development :: Testing",
+  "Topic :: Software Development :: Testing :: Mocking",
   "Topic :: Internet :: Proxy Servers",
   "Typing :: Typed",
 ]
@@ -51,8 +60,11 @@ docs = [
 [project.urls]
 Homepage = "https://github.com/sswivell/mock-relay"
 Documentation = "https://sswivell.github.io/mock-relay/"
-Changelog = "https://github.com/sswivell/mock-relay/blob/main/CHANGELOG.md"
+Source = "https://github.com/sswivell/mock-relay"
 Issues = "https://github.com/sswivell/mock-relay/issues"
+Discussions = "https://github.com/sswivell/mock-relay/discussions"
+Changelog = "https://github.com/sswivell/mock-relay/blob/main/CHANGELOG.md"
+Funding = "https://github.com/sponsors/sswivell"
 Security = "https://github.com/sswivell/mock-relay/security/advisories/new"
 
 [project.scripts]
@@ -75,6 +87,7 @@ include = [
   "/docs",
   "/examples",
   "/scripts",
+  "/Dockerfile",
   "/README.md",
   "/CHANGELOG.md",
   "/LICENSE",

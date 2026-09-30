@@ -4,14 +4,16 @@
   {{ super() }}
   <link rel="canonical" href="{{ page.canonical_url | default(config.site_url) }}">
 
+  <meta name="description" content="{{ page.meta.get('description', config.site_description) }}">
+
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="MockRelay">
-  <meta property="og:title" content="MockRelay — record real HTTP traffic, replay it offline">
-  <meta property="og:description" content="A local HTTP proxy that records real API traffic into redacted JSON fixtures and replays them offline with ranked, deterministic matching.">
+  <meta property="og:title" content="MockRelay — HTTP mocking and API record/replay">
+  <meta property="og:description" content="A local HTTP proxy that records real API traffic into redacted JSON fixtures and replays them offline, deterministically. For API testing, integration testing, and CI.">
   <meta property="og:url" content="{{ config.site_url }}">
   <meta property="og:image" content="{{ config.site_url }}assets/social-preview.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="MockRelay — record real HTTP traffic, replay it offline">
-  <meta name="twitter:description" content="A local HTTP proxy that records real API traffic into redacted JSON fixtures and replays them offline with ranked, deterministic matching.">
+  <meta name="twitter:title" content="MockRelay — HTTP mocking and API record/replay">
+  <meta name="twitter:description" content="A local HTTP proxy that records real API traffic into redacted JSON fixtures and replays them offline, deterministically. For API testing, integration testing, and CI.">
   <meta name="twitter:image" content="{{ config.site_url }}assets/social-preview.png">
 {% endblock %}

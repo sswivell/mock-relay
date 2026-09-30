@@ -1,0 +1,20 @@
+# MockRelay ships no third-party runtime image, so nothing here comes from
+# upstream. `python:3.12-slim` is the official CPython image on Docker Hub.
+python:3.12-slim
+
+# The build stage copies the working tree in, so the context must be the
+# repository root and the local caches must stay out of it.
+.git
+.github
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.tmp_demo
+dist
+site
+__pycache__
+*.pyc
+*.egg-info
+.venv
+venv
+fixtures
