@@ -6,7 +6,6 @@ latency_ms: 0
 metrics_enabled: true
 sequential: false
 
-# Smart matching
 match_mode: auto
 fuzzy_threshold: 0.86
 ignore_case: false
