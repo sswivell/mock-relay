@@ -11,93 +11,38 @@ edit_uri: edit/main/docs/
 copyright: Copyright &copy; sswivell - MIT licensed
 
 theme:
-  name: material
-  language: en
-  # Only used for the <head> meta tags in main.html: canonical URL and the
-  # Open Graph / Twitter card so a shared link renders a preview.
+  # The theme that ships with MkDocs. White page, plain text sidebar, nothing
+  # clever. `nav_style: light` keeps the top bar white, and `color_mode: light`
+  # drops the dark-mode toggle so there is only ever one appearance.
+  name: mkdocs
+  nav_style: light
+  color_mode: light
+  # Only used for the <head> meta tags in overrides/main.html: the canonical
+  # URL and the Open Graph / Twitter card, so a shared link renders a preview.
   custom_dir: docs/overrides
-  logo: assets/logo.svg
   favicon: assets/logo.svg
-  # White background, no dark mode. The stock colours, not custom ones.
-  palette:
-    scheme: default
-    primary: blue
-    accent: blue
-  font:
-    text: false
-    code: false
-  # Navigation that is easy to get around with: a search box, a full section
-  # tree, prev/next links, and a back-to-top button. The animated features
-  # (instant loading, scroll tracking) are deliberately off.
-  features:
-    - navigation.sections
-    - navigation.indexes
-    - navigation.top
-    - navigation.footer
-    - search.highlight
-    - search.suggest
-    - toc.follow
-    - content.code.copy
-
-extra_css:
-  - stylesheets/extra.css
 
 extra:
   generator: false
-  # No PyPI link here on purpose: the project is not published yet, and a
-  # social link that 404s is worse than no link. Re-add it at publish time.
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/sswivell/mock-relay
-      name: MockRelay on GitHub
-    - icon: fontawesome/brands/github
-      link: https://github.com/sswivell/mock-relay/discussions
-      name: MockRelay discussions
-    - icon: material/source-branch
-      link: https://github.com/sswivell/mock-relay/blob/main/CHANGELOG.md
-      name: MockRelay changelog
 
+# The extensions the pages actually use: fenced code, tables, definition lists,
+# footnotes, and the `!!!` / `???` admonition blocks.
 markdown_extensions:
-  - abbr
   - admonition
   - attr_list
   - def_list
   - footnotes
-  - md_in_html
   - tables
   - toc:
       permalink: true
-      permalink_title: Link to this section
-  - pymdownx.betterem
-  - pymdownx.caret
   - pymdownx.details
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.keys
-  - pymdownx.mark
-  - pymdownx.smartsymbols
-  - pymdownx.snippets
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.tabbed:
-      alternate_style: true
+  - pymdownx.superfences
+  - pymdownx.tabbed
   - pymdownx.tasklist:
       custom_checkbox: true
-  - pymdownx.tilde
 
 plugins:
-  - search:
-      lang: en
-      separator: '[\s\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - search
 
 nav:
   - Home: index.md

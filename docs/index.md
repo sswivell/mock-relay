@@ -9,10 +9,15 @@ it answers entirely from those files, with no outbound network calls at all.
 ## Install
 
 ```bash
-pip install mockrelay
+pip install "mockrelay @ git+https://github.com/sswivell/mock-relay.git"
 ```
 
 Requires Python 3.10 or newer. The only runtime dependency is PyYAML.
+
+!!! info "Not on PyPI yet"
+    MockRelay is not published to PyPI, so the install command above names git
+    explicitly. It builds the same tagged source as the release workflow. Once a
+    release ships, `pip install mockrelay` will work unchanged.
 
 ## Quick start
 

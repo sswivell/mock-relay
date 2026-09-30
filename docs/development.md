@@ -99,6 +99,35 @@ mockrelay --version
 
 ---
 
+## Building the Documentation
+
+The site is plain MkDocs with the theme it ships with. There is no custom CSS
+and no JavaScript.
+
+```bash
+pip install -e ".[docs]"
+python -m mkdocs serve          # live preview on http://127.0.0.1:8000
+python -m mkdocs build --strict # writes ./site
+```
+
+`--strict` turns a broken internal link into a build failure. Run the nav check
+too, which catches a page that was added to `docs/` and forgotten in the nav:
+
+```bash
+python scripts/check_docs_nav.py
+```
+
+Both run in CI before the GitHub Pages deploy.
+
+The social preview card is committed as `docs/assets/social-preview.png`. If you
+edit its SVG, regenerate the PNG:
+
+```bash
+python scripts/make_social_preview.py
+```
+
+---
+
 ## Code Architecture & Conventions
 
 MockRelay uses a numbered internal module layout (`_01.py` through `_19.py`). This architecture is intentional and load-bearing.
