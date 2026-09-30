@@ -11,22 +11,15 @@ edit_uri: edit/main/docs/
 copyright: Copyright &copy; sswivell - MIT licensed
 
 theme:
-  # The theme that ships with MkDocs. White page, plain text sidebar, nothing
-  # clever. `nav_style: light` keeps the top bar white, and `color_mode: light`
-  # drops the dark-mode toggle so there is only ever one appearance.
   name: mkdocs
   nav_style: light
   color_mode: light
-  # Only used for the <head> meta tags in overrides/main.html: the canonical
-  # URL and the Open Graph / Twitter card, so a shared link renders a preview.
   custom_dir: docs/overrides
   favicon: assets/logo.svg
 
 extra:
   generator: false
 
-# The extensions the pages actually use: fenced code, tables, definition lists,
-# footnotes, and the `!!!` / `???` admonition blocks.
 markdown_extensions:
   - admonition
   - attr_list
@@ -35,11 +28,6 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
-  - pymdownx.details
-  - pymdownx.superfences
-  - pymdownx.tabbed
-  - pymdownx.tasklist:
-      custom_checkbox: true
 
 plugins:
   - search

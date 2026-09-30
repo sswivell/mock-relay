@@ -43,13 +43,6 @@ dev = [
   "build>=1.2",
   "pip-audit>=2.7",
 ]
-# The documentation toolchain. Two packages: MkDocs and the theme it ships
-# with. There is no custom CSS and no JavaScript on the site.
-# Kept out of `dev` so the toolchain needed only to run the test suite stays
-# small, and out of the package's own dependencies because the published wheel
-# does not ship the documentation.
-# Pillow is only used by scripts/make_social_preview.py, which regenerates the
-# committed social-preview.png from its SVG source.
 docs = [
   "mkdocs==1.6.1",
   "Pillow>=10",
