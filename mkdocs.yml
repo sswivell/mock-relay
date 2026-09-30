@@ -59,13 +59,18 @@ extra_javascript:
 
 extra:
   generator: false
+  # No PyPI link here on purpose: the project is not published yet, and a
+  # social link that 404s is worse than no link. Re-add it at publish time.
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/sswivell/mock-relay
       name: MockRelay on GitHub
-    - icon: fontawesome/brands/python
-      link: https://pypi.org/project/mockrelay/
-      name: MockRelay on PyPI
+    - icon: fontawesome/brands/github
+      link: https://github.com/sswivell/mock-relay/discussions
+      name: MockRelay discussions
+    - icon: material/source-branch
+      link: https://github.com/sswivell/mock-relay/blob/main/CHANGELOG.md
+      name: MockRelay changelog
 
 markdown_extensions:
   - abbr
