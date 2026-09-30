@@ -39,7 +39,23 @@ def _upstream(status=200, body=None, headers=None):
         def log_message(self, *a):
             return
 
+        def _drain(self):
+            """Consume the request body before answering.
+
+            This handler speaks HTTP/1.1, so the connection is kept alive. An
+            origin that answers without reading the request body leaves those
+            bytes in the socket buffer, and the close that follows is then
+            turned into a TCP reset. The proxy reads that reset as a failed
+            upstream call and returns 502, which showed up here as a
+            fixture-count failure in roughly one run out of five. Draining
+            first keeps the exchange in a state both sides agree on.
+            """
+            length = int(self.headers.get("Content-Length") or 0)
+            if length:
+                self.rfile.read(length)
+
         def do_GET(self):
+            self._drain()
             payload = json.dumps(body or {"ok": True}).encode()
             self.send_response(status)
             self.send_header("Content-Type", "application/json")
