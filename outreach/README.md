@@ -252,24 +252,33 @@ Don't use it "as a write-only tool for product announcements." The `show` tag is
 off-limits to accounts younger than 70 days, so the account needs to exist
 first. Use it for one technical story, not a launch announcement.
 
-### 1f. GitHub Discussions — `done`
+### 1f. GitHub Discussions — `submitted`
 
 | Field | Value |
 |---|---|
-| URL | https://github.com/sswivell/mock-relay/discussions |
+| URL | https://github.com/sswivell/mock-relay/discussions/22 |
+| Category | Show and tell |
 | Status | `submitted` |
 
-Categories already exist (Announcements, General, Ideas, Q&A, Show and tell).
-The welcome and feedback-request post is in `outreach/github-discussion.md`
-and has been posted to **Show and tell**.
+Categories already existed (Announcements, General, Ideas, Q&A, Show and tell).
+The repo had Discussions enabled with nothing in it, which reads as abandoned to
+anyone deciding whether to contribute. The post is in
+`outreach/github-discussion.md`.
 
-### 1g. GitHub issue templates for newcomers
+### 1g. Good first issues — `submitted`
 
-Issue templates and labels already exist. What was missing was content in the
-tracker: `good first issue` had a label and nothing behind it. Three scoped
-first issues have been opened from `outreach/good-first-issues.md` so a
-contributor can find something to do without the maintainer inventing it on the
-spot.
+The repo had a `good first issue` label, a CONTRIBUTING.md section pointing at
+it, and nothing behind it. A contributor who clicks that link and finds an empty
+list concludes the project has no room for them.
+
+| Issue | Labels |
+|---|---|
+| https://github.com/sswivell/mock-relay/issues/24 | `good first issue`, `tests` |
+| https://github.com/sswivell/mock-relay/issues/25 | `good first issue`, `documentation` |
+
+A third (a CI recipe for GitHub Actions) was opened as #23 and then closed,
+because PR #21 already landed that work. Closing it keeps the list honest
+rather than offering a contributor something that is already done.
 
 ---
 
@@ -289,10 +298,11 @@ targeted, well-formed entries in lists that demonstrably accept them.
 | Format | `- [Name](url) - Description.` alphabetized within the section |
 | Rules | No CONTRIBUTING.md exists; observable convention from merged PRs is one tool per PR, strict alphabetical placement, sentence-ending period. `typos` and `rumdl` lint enforced by pre-commit. Human editorial merge required; ~1-5 day turnaround. |
 | Activity | 312 stars, last commit 2026-09-29, four external entries merged in the two weeks to 2026-09-23 |
-| Status | `submitted` — see `outreach/awesome-list-prs.md` for the exact text |
+| Status | `submitted` — https://github.com/cleder/awesome-python-testing/pull/129 |
 
 This is the best topical fit: the section already contains Cornell
-("record & replay mock server") and Mockintosh.
+("record & replay mock server") and Mockintosh. Placed between `Mockintosh` and
+`moto` to keep the section alphabetical.
 
 ### 2b. marmelab/awesome-rest — `submitted`
 
@@ -301,9 +311,11 @@ This is the best topical fit: the section already contains Cornell
 | URL | https://github.com/marmelab/awesome-rest |
 | Section | `README.md` → `## Testing` → `### Mocking` |
 | Format | `* [Name](url) - Sentence.` with `*` bullets |
-| Rules | No CONTRIBUTING.md exists. |
+| Rules | No CONTRIBUTING.md exists. The section is **not** alphabetised, so the entry was appended after `Mockae`. |
 | Activity | 3,918 stars, last push 2026-09-23 |
-| Status | `submitted` |
+| Status | `submitted` — https://github.com/marmelab/awesome-rest/pull/230 |
+
+Note: the default branch on this repo is `master`, not `main`.
 
 Expect a wait. The Mocking section currently has a backlog of unmerged PRs
 (MockBase from 2026-09-09, DriftWire from 2026-09-22), so this will likely sit
@@ -342,7 +354,7 @@ submission path is verifiable.
 
 | Target | URL | Status | Notes |
 |---|---|---|---|
-| LibHunt | https://www.libhunt.com/repo/submit | `manual` | Repo URL only, no login on the form, appears to index automatically. 30 seconds of work, low value but near-zero cost. |
+| LibHunt | https://www.libhunt.com/r/mock-relay | **`submitted`** | No login required. Accepted and indexed at https://www.libhunt.com/repo/3893156/suggest_alternative. It already groups MockRelay with Hoverfly and similar service-virtualization tools. |
 | PyCoder's Weekly | https://pycoders.com/submissions | `manual` | Google Form, no login. Explicitly accepts "projects you are working on". Last issue #754, 2026-09-29, so it is active. Submission in `outreach/newsletters.md`. |
 | console.dev | https://console.dev/selection-criteria | `manual` | Email `hello@console.dev`. Requires the developer to be the primary user, actively maintained, good docs, and self-service signup. Open source is not excluded. Submission in `outreach/newsletters.md`. |
 | Changelog News | https://changelog.com/news/submit | `manual` | Login required. "Submitting your own work is also encouraged." Explicitly rejects commercial products, so an open source tool is fine. Submission in `outreach/newsletters.md`. |

@@ -9,15 +9,29 @@ independent of each other, and they are real gaps rather than busywork.
 
 Status: **submitted**.
 
+| Issue | URL | Labels | State |
+|---|---|---|---|
+| Test coverage for redaction of nested and array-shaped secrets | https://github.com/sswivell/mock-relay/issues/24 | `good first issue`, `tests` | open |
+| Document the fixture schema from an actual fixture | https://github.com/sswivell/mock-relay/issues/25 | `good first issue`, `documentation` | open |
+| CI recipe for GitHub Actions | https://github.com/sswivell/mock-relay/issues/23 | `good first issue`, `documentation` | **closed**, PR #21 landed this work first |
+
+Issue #23 was opened before PR #21 was pushed, and #21 turned out to include the
+CI recipe. It was closed with a comment saying so rather than left open, because
+a stale issue on the `good first issue` list is worse than no list: it is the
+first thing a new contributor clicks, and offering them finished work is a good
+way to lose them.
+
 ---
 
-## Issue 1 — good first issue, documentation
+## Issue 1 — CLOSED, delivered by PR #21
 
-**Title**
+**Title:** Add a recipe for running the integration suite against MockRelay in GitHub Actions
 
-```text
-Add a recipe for running the integration suite against MockRelay in GitHub Actions
-```
+Landed in PR #21. Closed with a comment pointing at it. The text below is kept
+for the record only.
+
+<details>
+<summary>Original text (no longer actionable)</summary>
 
 **Labels:** `good first issue`, `documentation`
 
@@ -52,15 +66,15 @@ Add it to the end of `docs/recipes.md`. No code changes needed.
 Claim this issue before you start so nobody duplicates the work.
 ```
 
+</details>
+
 ---
 
-## Issue 2 — good first issue, tests
+## Issue 2 — OPEN
 
-**Title**
+https://github.com/sswivell/mock-relay/issues/24
 
-```text
-Test coverage for redaction of nested and array-shaped secrets
-```
+**Title:** Test coverage for redaction of nested and array-shaped secrets
 
 **Labels:** `good first issue`, `tests`
 
@@ -93,13 +107,11 @@ Claim this issue before you start so nobody duplicates the work.
 
 ---
 
-## Issue 3 — good first issue, documentation
+## Issue 3 — OPEN
 
-**Title**
+https://github.com/sswivell/mock-relay/issues/25
 
-```text
-Document the fixture schema from an actual fixture, not a hand-written example
-```
+**Title:** Document the fixture schema from an actual fixture, not a hand-written example
 
 **Labels:** `good first issue`, `documentation`
 

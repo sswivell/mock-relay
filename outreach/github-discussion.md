@@ -1,6 +1,7 @@
 # GitHub Discussion: welcome and feedback
 
-Status: **submitted** to https://github.com/sswivell/mock-relay/discussions
+Status: **submitted**
+URL: https://github.com/sswivell/mock-relay/discussions/22
 Category: Show and tell
 
 Discussion categories already exist on the repo: Announcements, General, Ideas,

@@ -4,11 +4,14 @@ All verified 2026-09-30. One tool per submission, existing file format, no
 multi-entry PRs. The rules for two of these explicitly reject coordinated
 multi-entry self-promotion, which is also just good manners.
 
+**Both PRs below have been opened.** Their current state is tracked in
+[`README.md`](README.md).
+
 ---
 
-## 1. cleder/awesome-python-testing
+## 1. cleder/awesome-python-testing — SUBMITTED
 
-URL: https://github.com/cleder/awesome-python-testing
+URL: https://github.com/cleder/awesome-python-testing/pull/129
 Target section: `README.md` → `## Mock and Stub`
 
 **Why it fits:** that section already contains Cornell ("record & replay mock
@@ -25,11 +28,8 @@ was a follow-up commit whose only purpose was "Place DriftWire in alphabetical
 order"), and `- [Name](url) - Description.` with a full stop. `typos` and
 `rumdl` lint run in pre-commit, so watch spelling and markdown lint.
 
-**Alphabetical position:** the section currently starts with Cornell and
-Mockintosh. "MockRelay" sorts after "Mockintosh"? Compare "MockR" against
-"Moci": `M-o-c` versus `M-o-c-k`... "Mockintosh" is M-o-c-k, "MockRelay" is
-M-o-c-k-R. Prefix match, so MockRelay comes immediately after Mockintosh.
-Check against the real file when the PR opens.
+**Placement used:** between `Mockintosh` and `moto`, which is where
+`MockRelay` sorts alphabetically.
 
 **PR title**
 
@@ -40,34 +40,30 @@ Add MockRelay to Mock and Stub
 **PR body**
 
 ```markdown
-Adds MockRelay, a local HTTP proxy that records real API traffic to JSON
-fixtures and replays them offline with ranked fixture matching.
+Adds [MockRelay](https://github.com/sswivell/mock-relay), a local HTTP proxy that
+records real API traffic to JSON fixtures and replays them offline, with ranked
+fixture matching so the most specific fixture wins rather than whichever file the
+filesystem returned first.
 
-Placed after Mockintosh in the `Mock and Stub` section, alphabetically.
-One tool, single entry, existing format.
+Placed between `Mockintosh` and `moto` to keep the section alphabetical. One
+tool, single entry, existing format.
 ```
 
-**Exact line to add**
+**Exact line added**
 
 ```markdown
 - [MockRelay](https://github.com/sswivell/mock-relay) - Local HTTP proxy that records real API traffic to JSON fixtures and replays them offline with ranked fixture matching.
 ```
 
-**Checks before opening the PR**
-
-- [ ] Read the current `## Mock and Stub` section; confirm placement is still
-      alphabetical after Mockintosh.
-- [ ] Match the exact bullet style and punctuation of the surrounding lines.
-- [ ] Confirm the repo has a LICENSE file. This list checks.
-- [ ] Run the description through `typos` mentally; MockRelay, Proxy, JSON,
-      fixtures, ranked, matching.
-- [ ] One tool. Not two. Not "and also".
+**If it is rejected:** do not resubmit a variant. Close it and leave the note.
+Reposting after a rejection is the behaviour that gets a project labelled as
+self-promo spam.
 
 ---
 
-## 2. marmelab/awesome-rest
+## 2. marmelab/awesome-rest — SUBMITTED
 
-URL: https://github.com/marmelab/awesome-rest
+URL: https://github.com/marmelab/awesome-rest/pull/230
 Target section: `README.md` → `## Testing` → `### Mocking`
 
 **Why it fits:** a pure mocking category, alongside FakeRest, json-server,
@@ -79,11 +75,11 @@ arguably an equally good home for a recording proxy.
 archived.
 
 **Rules:** no CONTRIBUTING.md. The section uses `*` bullets rather than `-`,
-and entries end with a full stop.
+entries end with a full stop, and **it is not alphabetised**. The entry was
+therefore appended after `Mockae`, following the existing convention.
 
-**Expect this to take a while.** The Mocking section has a visible backlog of
-unmerged PRs: MockBase opened 2026-09-09, DriftWire 2026-09-22. So a wait of
-weeks is normal here and is not a rejection. Open it once and leave it.
+**Gotcha:** the default branch is `master`, not `main`. A PR targeting `main`
+fails with "Base ref must be a branch".
 
 **PR title**
 
@@ -94,17 +90,24 @@ Add MockRelay to Mocking
 **PR body**
 
 ```markdown
-Adds MockRelay to the `Mocking` section: a local HTTP proxy that records real
-API traffic to JSON fixtures and replays them offline, with ranked fixture
-matching so the most specific fixture wins rather than whichever file the
-filesystem returned first.
+Adds [MockRelay](https://github.com/sswivell/mock-relay) to the `Mocking`
+section: a local HTTP proxy that records real API traffic to JSON fixtures and
+replays them offline, with ranked fixture matching so the most specific
+response wins rather than whichever file the filesystem returned first.
+
+Appended after `Mockae`. The section is not alphabetised, so this follows the
+existing append-at-the-end convention.
 ```
 
-**Exact line to add**
+**Exact line added**
 
 ```markdown
-* [MockRelay](https://github.com/sswivell/mock-relay) - Local HTTP proxy that records real API traffic to JSON fixtures and replays them offline with ranked fixture matching.
+* [MockRelay](https://github.com/sswivell/mock-relay) - Local HTTP proxy that records real API traffic to JSON fixtures and replays them offline, with ranked fixture matching so the most specific response wins.
 ```
+
+**Expect this to take a while.** The Mocking section has a visible backlog of
+unmerged PRs: MockBase opened 2026-09-09, DriftWire 2026-09-22. So a wait of
+weeks is normal here and is not a rejection. Leave it alone.
 
 ---
 
@@ -132,18 +135,28 @@ real PyPI download number behind it. Publish to PyPI first, then revisit.
 
 ---
 
-## 4. LibHunt
+## 4. LibHunt — SUBMITTED
 
-URL: https://www.libhunt.com/repo/submit
-Requires: a repo URL. No login on the form.
-Status: `manual`, 30 seconds of work.
+URL: https://www.libhunt.com/r/mock-relay
+Form: https://www.libhunt.com/repo/submit → posts to `/repo/create`
+Requires: a repo URL. No login.
+Status: `submitted`. Accepted and indexed at
+https://www.libhunt.com/repo/3893156/suggest_alternative
 
-```text
-https://github.com/sswivell/mock-relay
-```
+It already groups MockRelay with Hoverfly and similar service-virtualization
+tools, which is the right neighbourhood. The full form was filled in:
 
-Low value, near-zero cost, and it indexes by topic. Worth doing once, not
-repeatedly.
+| Field | Value |
+|---|---|
+| `repo[url]` | `https://github.com/sswivell/mock-relay` |
+| `repo[name]` | `mock-relay` |
+| `repo[description]` | Local HTTP proxy that records real API traffic to JSON fixtures and replays them offline with ranked fixture matching. For API testing, integration testing, and CI. |
+| `repo[homepage_url]` | `https://sswivell.github.io/mock-relay/` |
+| `repo[docs_url]` | `https://sswivell.github.io/mock-relay/` |
+| `repo[is_selfhosted]` | `0` |
+| `topics_list` | `http mocking,api mocking,record replay,testing,fixtures` |
+
+Nothing to do again here. Do not resubmit.
 
 ---
 
