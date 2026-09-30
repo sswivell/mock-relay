@@ -30,9 +30,6 @@ def _run(argv, capsys):
     return code, out.out, out.err
 
 
-# --version
-
-
 def test_01_version_prints_the_package_version(capsys):
     code, out, _ = _run(["--version"], capsys)
     assert code == 0
@@ -63,9 +60,6 @@ def test_03_version_does_not_need_a_config_or_a_store(tmp_path, monkeypatch):
     assert proc.returncode == 0, proc.stderr
     assert __version__ in proc.stdout
     assert not (tmp_path / "fixtures").exists()
-
-
-# config validation
 
 
 def _load(data):
@@ -206,9 +200,6 @@ def test_11_a_bad_config_still_yields_usable_defaults():
     assert cfg.problems
 
 
-# config loading
-
-
 def test_12_unparseable_yaml_raises_a_config_error(tmp_path):
     from mockrelay._05 import _06
     from mockrelay.errors import ConfigLoadError
@@ -245,9 +236,6 @@ def test_15_a_missing_config_file_still_loads_defaults(tmp_path):
     cfg = _06._07(tmp_path / "absent.yaml")
     assert cfg.problems == []
     assert cfg.mode == "record"
-
-
-# validate
 
 
 def _fixture(upstream="gh", path="/users/octocat", status=200):
@@ -346,9 +334,6 @@ def test_22_validate_defaults_to_mockrelay_yaml(tmp_path, capsys, monkeypatch):
     assert "Traceback" not in out
 
 
-# stats
-
-
 def _tree_with(tmp_path, count=1, upstream="gh"):
 
     from mockrelay._10 import _04 as Store
@@ -404,9 +389,6 @@ def test_25_stats_can_be_limited_to_one_upstream(tmp_path, capsys):
     assert code == 0
     assert "gh" in out
     assert json.dumps("stripe") not in out
-
-
-# clean
 
 
 def test_26_clean_without_yes_only_reports(tmp_path, capsys):
@@ -480,9 +462,6 @@ def test_30_clean_needs_a_positive_age(tmp_path, capsys):
     path = _config_file(tmp_path)
     code, _, _ = _run(["clean", "-c", str(path), "--older-than", "0", "--yes"], capsys)
     assert code == EXIT_USAGE
-
-
-# --json
 
 
 def _json_run(argv, capsys):
@@ -618,9 +597,6 @@ def test_40_json_output_is_pure_json(tmp_path, capsys):
     code, out, _ = _run(["stats", "-c", str(path), "--json"], capsys)
     assert code == 0
     json.loads(out)
-
-
-# exit codes and error rendering
 
 
 _BAD = "listen: '127.0.0.1:99999'\nmode: replay\n"

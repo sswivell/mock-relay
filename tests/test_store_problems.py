@@ -135,7 +135,7 @@ def test_unreadable_file_is_reported(store):
     finally:
         locked.chmod(0o600)
     if os.geteuid() == 0:
-        assert ids == ["ok", "x"]  # root ignores the mode bits
+        assert ids == ["ok", "x"]
         return
     assert ids == ["ok"]
     assert store.problem_count == 1

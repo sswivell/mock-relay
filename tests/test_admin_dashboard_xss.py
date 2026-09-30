@@ -52,11 +52,8 @@ def test_03_no_template_literal_reaches_an_html_sink():
         stripped = line.strip()
         if "${" not in stripped:
             continue
-        # The one legitimate use is building the style attribute, which is
-        # authored, not fetched. Nothing else may interpolate.
         assert "background:" not in stripped and "body{" not in stripped, (
             f"line {i} interpolates into markup: {stripped}")
-    # And in the script block proper there must be no template literals.
     script = PAGE.split("<script>", 1)[1].split("</script>", 1)[0]
     assert "`" not in script, "the script block still builds markup from strings"
 
@@ -64,7 +61,6 @@ def test_03_no_template_literal_reaches_an_html_sink():
 def test_04_cells_are_written_with_textcontent():
     script = PAGE.split("<script>", 1)[1].split("</script>", 1)[0]
     assert "textContent" in script
-    # At least as many assignments as there are user-facing columns.
     assert script.count("textContent") >= 8, script
 
 
@@ -88,9 +84,6 @@ def test_06_a_payload_in_a_dashboard_column_has_nothing_to_escape_into(payload):
     assert "outerHTML" not in PAGE
     assert "insertAdjacentHTML" not in PAGE
     assert "document.write" not in PAGE
-    # Sanity: each payload carries at least one character that matters in
-    # a markup, template-literal, or URL context, so the cases are not
-    # vacuous.
     assert set(payload) & set("<>${}`'\":()")
 
 

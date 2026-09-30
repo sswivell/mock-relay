@@ -38,8 +38,6 @@ _25 = re.compile(
     r"apikey|client_secret|secret|authorization)=([^&\s\"';]{1,})"
 )
 
-# Applied in order; earlier patterns win where two could match the same text.
-# The first three keep their prefix so the placeholder still says what leaked.
 _26: tuple[tuple[re.Pattern[str], str], ...] = (
     (_02, "Bearer " + _01),
     (_03, "sk_" + _01),
@@ -71,9 +69,6 @@ def _05(headers: dict[str, str], redact_list: list[str]) -> dict[str, str]:
 
 
 def _06(text: str) -> str:
-    # A replacement is skipped when the matched text already carries a
-    # placeholder, so a later, broader pattern cannot undo an earlier one
-    # and turn `token=ghp_{{SECRET}}` into `token={{SECRET}}`.
     for pattern, replacement in _26:
         text = pattern.sub(
             lambda m, r=replacement: m.group(0) if "{{" in m.group(0) else m.expand(r),

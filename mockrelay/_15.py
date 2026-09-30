@@ -265,8 +265,6 @@ def _23(args) -> None:
     as_json = getattr(args, "json", False)
 
     if not path.exists():
-        # serve tolerates a missing config and runs on defaults; validate was
-        # pointed at a file, so a missing one is the answer, not a fallback.
         from .errors import ConfigLoadError as _missing
 
         e = _missing(
@@ -519,8 +517,6 @@ def _21() -> argparse.ArgumentParser:
 
 def _40(argv: list[str] | None = None) -> None:
     for _stream in (sys.stdout, sys.stderr):
-        # Not every stream is reconfigurable: pytest's capture objects, and
-        # a detached stream, both raise here.
         with contextlib.suppress(AttributeError, ValueError, OSError):
             _stream.reconfigure(encoding="utf-8", errors="replace")
     argv = list(sys.argv[1:] if argv is None else argv)
@@ -534,9 +530,6 @@ def _40(argv: list[str] | None = None) -> None:
     try:
         args.func(args)
     except MockRelayError as e:
-        # A config the user got wrong is an answer, not a crash: render it
-        # the way the rest of the tool renders problems and exit on the
-        # code the exception carries, so a caller can branch on it.
         if getattr(args, "json", False):
             _emit(
                 getattr(args, "cmd", None) or "error",

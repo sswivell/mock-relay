@@ -68,20 +68,6 @@ def _19(state: _18):
             try:
                 return self._31()
             except FramingError as e:
-                # Raised before the body was read, so the socket still
-                # holds whatever the client claimed was the body. The next
-                # keep-alive read would start in the middle of it and the
-                # client would get to choose what that request is. Close
-                # instead of guessing; this is the one refusal that costs
-                # us the connection.
-                #
-                # The close is only safe if the socket buffer is empty
-                # first. Closing a socket with unread data queued makes the
-                # OS send an RST, and an RST discards the 400 we just
-                # wrote -- the client would see a connection error instead
-                # of the explanation for why we refused it. So drain
-                # first, bounded by the same body limit every other read
-                # obeys, and only then close.
                 self.close_connection = True
                 self._32()
                 return self._26(400, {"error": e.message, "type": e.code},
@@ -121,9 +107,6 @@ def _19(state: _18):
                 return 0
             drained = 0
             try:
-                # A short timeout is the "nothing more is coming right now"
-                # signal, and is only ever this short on a connection we
-                # are about to close.
                 sock.settimeout(0.25)
                 while drained < cap:
                     try:
@@ -163,9 +146,6 @@ def _19(state: _18):
                 q_multi.setdefault(k, []).append(v)
             req_body = _13(raw, self.headers.get("content-type", ""))
 
-            # Deliberately a non-cryptographic generator: error injection is
-            # a testing feature that wants to be seeded and reproducible, not
-            # unpredictable.
             if err_inj and random.random() < float(err_inj.get("rate", 1.0)):  # noqa: S311
                 st = int(err_inj.get("status", 500))
                 body = err_inj.get("body") or {"error": "injected", "status": st}
@@ -214,10 +194,6 @@ def _19(state: _18):
                 return self._26(502, {"error": "upstream failed", "detail": str(e)})
 
             if mode in ("record", "hybrid"):
-                # Everything below is written to disk and lives longer than
-                # the process that recorded it, so redaction is applied to
-                # the response and to a JSON request body here rather than
-                # being assumed to have happened upstream.
                 red_req = _06(dict(self.headers), cfg.redact_headers)
                 red_body = _07(req_body) if isinstance(
                     req_body, (dict, list, str)) else None
@@ -278,17 +254,10 @@ def _19(state: _18):
                     continue
                 self.send_header(k, v)
             if close:
-                # Spelled out rather than left to BaseHTTPRequestHandler,
-                # because it is easy to forget that send_response only
-                # *emits* the header here -- the default is applied later,
-                # from self.close_connection, after the caller has had
-                # every chance to clear it.
                 self.send_header("Connection", "close")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             if self.command != "HEAD":
-                # A client that hangs up mid-response is routine, not an
-                # error worth logging or propagating.
                 with contextlib.suppress(Exception):
                     self.wfile.write(body)
 

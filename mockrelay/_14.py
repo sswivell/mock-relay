@@ -83,8 +83,6 @@ def _18(fn):
         try:
             return fn(self)
         except MockRelayError as e:
-            # `code` is the stable token; `kind` is a phrase meant for
-            # people and may be reworded without warning.
             if isinstance(e, SecurityError):
                 status = 400
             elif isinstance(e, LimitExceeded):
@@ -155,7 +153,6 @@ def _05(state: _01):
                 if not chunk:
                     break
                 remaining -= len(chunk)
-
 
         @_18
         def do_GET(self):
