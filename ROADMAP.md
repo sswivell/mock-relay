@@ -1,7 +1,8 @@
 # Roadmap
 
-MockRelay is pre-1.0. `0.x` means the shape of things may still change, so
-tell us early if something does not fit your use case.
+MockRelay is at 1.0. The CLI surface and the fixture schema are settled, so
+changes to them are deliberate rather than incidental. Tell us early if
+something does not fit your use case.
 
 Where work actually lives:
 
@@ -25,8 +26,10 @@ this, and the remaining work is making the output easier to read, and
 covering more match fields in it.
 
 **Packaging and reach.** MockRelay depends only on PyYAML and targets
-Python 3.10+, but it is not on PyPI yet. Publishing, and keeping a
-`Dockerfile` current, are tracked under `ci`.
+Python 3.10+. The `Dockerfile` covers containerised use and CI images.
+Publishing to PyPI is the remaining piece; the release workflow for it is in
+`.github/workflows/publish.yml` and waits on a PyPI project and a trusted
+publisher being configured.
 
 **Docs and examples.** The [docs](docs/) cover the feature set, and
 [examples](examples/) has runnable configurations. Both would benefit from

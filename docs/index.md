@@ -6,6 +6,11 @@ MockRelay is a local HTTP proxy. In **record** mode it forwards your requests to
 the real service and saves each exchange as a JSON fixture. In **replay** mode
 it answers entirely from those files, with no outbound network calls at all.
 
+It is built for **HTTP mocking**, **API recording**, **API replay**, and
+**deterministic API testing**: local development against a real API shape,
+integration tests that do not depend on a third party's uptime, and CI that does
+not burn someone else's rate limit.
+
 ## Install
 
 ```bash
@@ -13,6 +18,13 @@ pip install "mockrelay @ git+https://github.com/sswivell/mock-relay.git"
 ```
 
 Requires Python 3.10 or newer. The only runtime dependency is PyYAML.
+
+Or run it in a container, with no Python on the host:
+
+```bash
+docker build -t mockrelay https://github.com/sswivell/mock-relay.git
+docker run --rm -v "$PWD:/work" -p 8080:8080 -p 8081:8081 mockrelay serve --mode replay
+```
 
 !!! info "Not on PyPI yet"
     MockRelay is not published to PyPI, so the install command above names git
@@ -76,6 +88,21 @@ Pull the plug on the network and it still works. That is the whole idea.
 - **Safe to commit.** Secrets are redacted to `{{SECRET}}` and volatile IDs
   become `{{NORMALIZED}}` before anything is written to disk, so fixtures are
   plain JSON you can read, diff, and check in.
+
+## When MockRelay is the wrong tool
+
+There are several good reasons not to reach for this:
+
+| If you need to… | Use instead |
+|---|---|
+| Invent responses that never happened | WireMock, Prism, or hand-written route handlers |
+| Generate different behaviour per test run | A programmatic stub in your test code |
+| Mock inside one process, with no server | `responses`, `respx`, or `vcrpy` |
+| Record and edit a HAR from a browser | mitmproxy, or the devtools network panel |
+| Intercept arbitrary protocols | A general-purpose proxy such as mitmproxy or Envoy |
+
+MockRelay replays traffic that was really recorded. If the response you need was
+never observed, it is the wrong shape of tool.
 
 ## What you get
 
