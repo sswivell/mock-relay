@@ -60,9 +60,6 @@ def _mutate(**changes):
     return doc
 
 
-# A sound fixture reports nothing.
-
-
 def test_01_a_sound_fixture_produces_no_problems():
     assert _14(SOUND, "f.json") == []
 
@@ -77,9 +74,6 @@ def test_03_a_sound_tree_produces_no_problems(tmp_path):
     problems, total = _16(tmp_path)
     assert problems == []
     assert total == 0
-
-
-# The document has to be a fixture at all.
 
 
 @pytest.mark.parametrize("value", [[], "text", 7, None, True])
@@ -115,9 +109,6 @@ def test_08_a_non_string_id_is_reported():
 def test_09_an_unknown_top_level_field_is_reported():
     rendered = _rendered(_14(_mutate(colour="blue"), "f.json"))
     assert any("colour" in r for r in rendered)
-
-
-# match
 
 
 def test_10_a_match_without_a_path_is_reported():
@@ -169,9 +160,6 @@ def test_18_a_non_boolean_ignore_case_is_reported():
     assert any("ignore_case" in p.location for p in _14(doc, "f.json"))
 
 
-# request
-
-
 def test_19_a_request_without_a_method_is_reported():
     doc = _mutate(request={"path": "/x"})
     assert any("method" in p.location for p in _14(doc, "f.json"))
@@ -186,9 +174,6 @@ def test_20_a_request_query_that_is_not_a_mapping_is_reported():
 def test_21_an_unknown_request_field_is_reported():
     doc = _mutate(request={**SOUND["request"], "colour": "blue"})
     assert any("colour" in p.location for p in _14(doc, "f.json"))
-
-
-# response
 
 
 def test_22_a_response_without_a_status_is_reported():
@@ -220,9 +205,6 @@ def test_26_a_response_that_is_not_a_mapping_is_reported():
     assert any("response" in r and "not a mapping" in r for r in rendered)
 
 
-# optional fixture fields
-
-
 def test_27_a_normalize_that_is_not_a_list_is_reported():
     doc = _mutate(normalize="$.id")
     assert any("normalize" in p.location for p in _14(doc, "f.json"))
@@ -237,9 +219,6 @@ def test_29_a_missing_call_index_is_fine():
     doc = _mutate()
     del doc["call_index"]
     assert _14(doc, "f.json") == []
-
-
-# on-disk faults
 
 
 def test_30_a_file_that_is_not_json_is_reported(tmp_path):

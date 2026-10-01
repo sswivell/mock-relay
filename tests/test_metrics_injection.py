@@ -18,7 +18,6 @@ import pytest
 from mockrelay._11 import _01 as Metrics
 from mockrelay._11 import _10 as escape
 
-# HELP/TYPE comment, or a sample: name{label="value",...} 1
 _COMMENT = re.compile(r"^# (HELP|TYPE) [a-zA-Z_:][a-zA-Z0-9_]* .*$")
 _LABEL_VALUE = r'(?:[^"\\\n]|\\.)*'
 _LABEL = r'[a-zA-Z_][a-zA-Z0-9_]*="' + _LABEL_VALUE + r'"'
@@ -88,9 +87,7 @@ def test_03_a_hostile_path_adds_no_series_and_no_label(raw):
     m._06(f'gh GET /x{raw}', 200, "replay")
     text = m._08()
     series = _series(text)
-    # Three counters are updated by one _06 call, whatever the key says.
     assert len(series) == 3, (raw, series)
-    # Parsed label names, not comma counts: the payload is full of both.
     assert _label_names(series[0]) == ["key"], (raw, series[0])
     assert _label_names(series[1]) == ["key"], (raw, series[1])
     assert _label_names(series[2]) == ["mode"], (raw, series[2])
@@ -102,7 +99,6 @@ def test_04_a_hostile_path_keeps_the_value_as_one_label(raw):
     m._06(f'gh GET /x{raw}', 200, "replay")
     line = _series(m._08())[0]
     value = _SAMPLE.match(line).group(2)
-    # The whole original string is still there, just escaped.
     assert value.startswith('key="gh GET /x')
 
 

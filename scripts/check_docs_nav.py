@@ -88,7 +88,7 @@ def resolve(ref: str, source: Path) -> Path | None:
     if not target:
         return None
     if target.startswith("/"):
-        return None  # site-root absolute; MkDocs owns those.
+        return None
 
     candidate = (source.parent / target).resolve()
     if candidate.is_file():

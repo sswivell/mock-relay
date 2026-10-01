@@ -38,9 +38,6 @@ def _record(
     return store._06(upstream, fx)
 
 
-# the store reader
-
-
 def test_01_the_store_yields_a_path_beside_each_fixture(tmp_path):
     store = Store(tmp_path)
     _record(store, "gh", "a")
@@ -75,9 +72,6 @@ def test_04_the_path_reader_honours_the_upstream_filter(tmp_path):
     _record(store, "gh", "a")
     _record(store, "stripe", "b")
     assert [fx.upstream for _, fx in store._12("gh")] == ["gh"]
-
-
-# statistics
 
 
 def test_05_statistics_are_grouped_by_upstream(tmp_path):
@@ -169,9 +163,6 @@ def test_12_statistics_ignore_unreadable_files_but_still_report(tmp_path):
     assert store.problems
 
 
-# age parsing, which decides what `clean` removes
-
-
 @pytest.mark.parametrize(
     "text",
     [
@@ -201,9 +192,6 @@ def test_15_a_naive_timestamp_is_assumed_utc():
     got = _when("2024-01-01T00:00:00Z")
     assert got.tzinfo is not None
     assert got == datetime(2024, 1, 1, tzinfo=timezone.utc)
-
-
-# what clean would remove
 
 
 def test_16_old_fixtures_are_selected_for_removal(tmp_path):

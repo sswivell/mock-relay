@@ -373,10 +373,6 @@ def parse_content_length_fields(values: object, *, max_digits: int = 18) -> int:
             except UnicodeDecodeError:  # pragma: no cover - defensive
                 raise FramingError("Content-Length must be ASCII digits") from None
         text = str(value)
-        # A comma list is a #rule in RFC 7230 section 7, which permits
-        # optional whitespace around the separators. Strip that here, and
-        # nowhere else: a lone field value with stray whitespace is a
-        # different question, and the header parser has already answered it.
         for part in (p.strip(" \t") for p in text.split(",")):
             try:
                 parsed.append(parse_content_length(part, max_digits=max_digits))

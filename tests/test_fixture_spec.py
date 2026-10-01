@@ -10,8 +10,6 @@ from mockrelay._10 import _04 as _store
 
 def test_01_id_is_unchanged_for_plain_matches():
     match = _01(method="GET", path="/x", query_subset={"a": ["1"]})
-    # Recomputing with the legacy algorithm is the assertion: recorded
-    # fixtures must keep the ids they were stored under.
     legacy = hashlib.sha1(json.dumps({  # noqa: S324
         "u": "u",
         "m": "GET",

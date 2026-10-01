@@ -103,11 +103,6 @@ class _06:
         self._14(d)
         self._31(self.fixtures_dir)
 
-    # Validation helpers. Each returns the value to use, recording a Problem
-    # when the file disagrees. Nothing here raises: a config that is wrong
-    # still has to produce a Config, because `mockrelay validate` exists to
-    # describe what is wrong about it.
-
     def _14(self, d: dict[str, Any]) -> None:
         for key in d:
             if key not in _TOP_KEYS:
@@ -387,8 +382,6 @@ class _06:
         try:
             data = _01.safe_load(text) if _02 else json.loads(text)
         except Exception as e:
-            # yaml.YAMLError and json.JSONDecodeError are different types but
-            # both mean the same thing here: this file is not parseable.
             raise ConfigLoadError(cls._15(e), source=str(p)) from e
         if data is None:
             return cls()
