@@ -61,21 +61,25 @@ def main() -> int:
     logo(d, 72, 72, 64)
     d.text((164, 82), "MockRelay", font=font(SANS_BOLD, 48), fill=INK)
 
-    d.text((72, 210), "Record real HTTP traffic once.",
-           font=font(SANS_BOLD, 40), fill=INK)
-    d.text((72, 262), "Replay it offline, as often as you like.",
-           font=font(SANS_BOLD, 40), fill=INK)
-    d.text((72, 330),
-           "A local HTTP proxy. Matched, redacted, deterministic.",
+    d.text((72, 172), "HTTP mocking and API record/replay",
+           font=font(SANS_BOLD, 38), fill=INK)
+    d.text((72, 224), "Record real traffic once. Replay it offline.",
+           font=font(SANS_BOLD, 38), fill=INK)
+    d.text((72, 288),
+           "A local HTTP proxy for API testing, integration tests, and CI.",
            font=font(SANS, 24), fill=MUTED)
 
-    d.rectangle([72, 404, 1128, 516], fill=PANEL, outline=RULE, width=2)
-    d.text((100, 430), "$ mockrelay serve --mode record",
-           font=font(MONO, 24), fill=INK)
-    d.text((100, 470), "$ mockrelay serve --mode replay     X-MockRelay-Score: 4000009",
-           font=font(MONO, 24), fill=INK)
+    d.rectangle([72, 368, 1128, 486], fill=PANEL, outline=RULE, width=2)
+    d.text((100, 396), "$ mockrelay serve --mode record",
+           font=font(MONO, 23), fill=INK)
+    d.text((100, 436), "$ mockrelay serve --mode replay     X-MockRelay-Match: exact",
+           font=font(MONO, 23), fill=INK)
 
-    d.text((72, 556), "MIT licensed \u00b7 Python 3.10+ \u00b7 one dependency (PyYAML)",
+    d.text((72, 528),
+           "Ranked fixture matching \u00b7 secrets redacted to {{SECRET}} \u00b7 no network in replay",
+           font=font(SANS, 22), fill=MUTED)
+    d.text((72, 566),
+           "Python 3.10+ \u00b7 one dependency (PyYAML) \u00b7 MIT",
            font=font(SANS, 22), fill=MUTED)
 
     img.save(OUT, "PNG", optimize=True)

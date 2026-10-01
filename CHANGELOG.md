@@ -4,6 +4,23 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- `Dockerfile` and `.dockerignore`, so MockRelay can run in a CI image or anywhere without Python on the host
+- `.github/workflows/publish.yml`, which builds the sdist and wheel behind the full test matrix and publishes to PyPI using trusted publishing (OIDC, no stored API token)
+- A complete GitHub Actions workflow in the CI recipe, showing the readiness wait and teardown that `mockrelay validate` on its own does not cover
+- `docs/comparisons.md`, covering where MockRelay sits against `vcrpy`, `responses`, `respx`, WireMock, MockServer, Prism, Hoverfly, and mitmproxy, including the cases where another tool is the better fit
+
+### Changed
+
+- The README now leads with the problem and the audience, includes a "when MockRelay is the wrong tool" section, a CI recipe, and an honest comparison against `vcrpy`, `responses`/`respx`, WireMock, Prism, Hoverfly, and mitmproxy
+- Package metadata gained the mocking and testing classifiers, `Source`/`Discussions`/`Funding` URLs, and keywords for API mocking, API testing, integration testing, and record/replay, which is what package indexes search on
+- `sequential` replay is now documented in the README and the configuration reference. It existed and was verified end to end, but was only mentioned in passing under advanced matching, which made it look unsupported
+
+### Documented
+
+- Sequential replay: `call_index` cycling and wrap-around, that `match_priority` and per-fixture `priority` are ignored while it is on, and that recording does not produce a sequence for you because fixture identity is derived from the request
+
 ## [1.0.0] - 2026-09-28
 
 ### Added

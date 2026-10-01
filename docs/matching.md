@@ -118,6 +118,24 @@ served, the response carries an `X-MockRelay-Priority` header.
 With `sequential: true`, fixtures are cycled in `call_index` order instead, so
 `match_priority` and `priority` do not apply.
 
+Three fixtures sharing a request, with ascending `call_index`:
+
+```json
+{ "id": "step-0", "call_index": 0, "match": { "method": "GET", "path": "/v1/step" } }
+{ "id": "step-1", "call_index": 1, "match": { "method": "GET", "path": "/v1/step" } }
+{ "id": "step-2", "call_index": 2, "match": { "method": "GET", "path": "/v1/step" } }
+```
+
+Seven requests to `/v1/step` are answered `step-0`, `step-1`, `step-2`,
+`step-0`, `step-1`, `step-2`, `step-0`. The list wraps rather than sticking on
+the last match.
+
+Recording does not build this for you. A recorded fixture's identity is derived
+from its request, so recording the same endpoint three times overwrites one
+file. Write the sequence by hand, or — if the steps are distinguishable by query
+parameter or request body — leave `sequential` off and set an integer `priority`
+on each fixture instead.
+
 ## JSON-aware bodies
 
 `body_contains` is a partial match: only the keys you list are compared, and

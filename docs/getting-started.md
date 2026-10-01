@@ -21,6 +21,18 @@ pip install "mockrelay @ git+https://github.com/sswivell/mock-relay.git"
     the supported install and builds the same sources as the release workflow.
     When a release ships, `pip install mockrelay` will work unchanged.
 
+### With Docker
+
+If the host has no Python, or you want MockRelay pinned in a CI image:
+
+```bash
+docker build -t mockrelay https://github.com/sswivell/mock-relay.git
+docker run --rm -v "$PWD:/work" -p 8080:8080 -p 8081:8081 mockrelay serve --mode replay
+```
+
+The `/work` volume is what keeps your `mockrelay.yaml` and `fixtures/` visible
+to the container. Port 8080 is the proxy and 8081 is the admin UI.
+
 ### From source
 
 For local development or contributing:

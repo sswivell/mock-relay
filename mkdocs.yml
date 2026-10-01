@@ -1,8 +1,8 @@
 site_name: MockRelay
 site_description: >-
-  Record real HTTP traffic once, replay it offline and deterministically.
-  A local HTTP proxy with ranked fixture matching, redaction, and a CI-friendly
-  CLI.
+  HTTP mocking and API record/replay. A local HTTP proxy that records real API
+  traffic into redacted JSON fixtures and replays them offline and
+  deterministically, for API testing, integration testing, and CI.
 site_author: sswivell
 site_url: https://sswivell.github.io/mock-relay/
 repo_url: https://github.com/sswivell/mock-relay
@@ -46,5 +46,6 @@ nav:
       - Architecture: architecture.md
   - Guides:
       - Common Recipes: recipes.md
+      - Comparisons: comparisons.md
       - Demo Script: demo.md
       - Development: development.md
