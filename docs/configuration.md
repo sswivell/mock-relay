@@ -54,6 +54,31 @@ wins.
 `smart_record_paths` is global only. When enabled, newly recorded fixtures
 store the strategy prefix they matched with.
 
+## Sequential replay
+
+`sequential` switches fixture selection from ranking to cycling: matching
+fixtures are served in ascending `call_index` order and the list wraps.
+
+```yaml
+sequential: true
+```
+
+It exists for endpoints that answer differently on each call — OAuth-style token
+exchanges, pagination until empty, or a sequence of responses that has to be
+reproduced in order.
+
+Two consequences worth knowing before you turn it on:
+
+- `match_priority` and per-fixture `priority` are ignored. Ordering is purely
+  `call_index`.
+- Recording does not produce a sequence for you. Fixture identity is derived
+  from the request, so recording the same endpoint repeatedly overwrites one
+  file instead of writing N. If the steps differ by query parameter or request
+  body, leave `sequential` off and give each fixture an integer `priority`
+  instead.
+
+See [Sequential replay](matching.md#sequential-replay) for a worked example.
+
 ## Redaction and normalization
 
 Both run before anything is written to disk, on the request side and the

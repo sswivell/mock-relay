@@ -46,5 +46,6 @@ nav:
       - Architecture: architecture.md
   - Guides:
       - Common Recipes: recipes.md
+      - Comparisons: comparisons.md
       - Demo Script: demo.md
       - Development: development.md

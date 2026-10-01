@@ -334,6 +334,35 @@ mockrelay match /orders -m POST -b '{"total": 500}'
 
 Outputs candidate ranking, scores, and a per-check breakdown of HTTP method, path, query parameters, and body.
 
+### Sequential Replay
+
+For endpoints that return a different response each time you call them, set
+`sequential: true` and give each fixture an ascending `call_index`. Candidates
+are then cycled in `call_index` order, wrapping when the last one is reached,
+instead of being ranked:
+
+```yaml
+sequential: true
+```
+
+```json
+{ "id": "step-0", "call_index": 0, "match": { "method": "GET", "path": "/v1/step" } }
+{ "id": "step-1", "call_index": 1, "match": { "method": "GET", "path": "/v1/step" } }
+{ "id": "step-2", "call_index": 2, "match": { "method": "GET", "path": "/v1/step" } }
+```
+
+Seven calls to that path return `step-0`, `step-1`, `step-2`, `step-0`, …
+
+Two things to know:
+
+- `match_priority` and per-fixture `priority` do not apply while sequential is
+  on. Ordering is purely `call_index`.
+- The recorder does **not** build this for you. Fixture identity is derived from
+  the request, so recording the same endpoint three times overwrites one file
+  rather than producing three. Write the fixtures, or use a hand-written
+  `priority` per response when the steps are distinguishable by query or body
+  rather than being a blind sequence.
+
 ---
 
 ## CLI Reference
@@ -421,6 +450,7 @@ Full documentation is available at [https://sswivell.github.io/mock-relay/](http
 - [Fixtures & Redaction](docs/fixtures.md) — the schema and secret masking
 - [Operating Modes](docs/modes.md) — record, replay, passthrough, hybrid
 - [Common Recipes](docs/recipes.md) — SDK redirection, retry testing, CI gating
+- [Comparisons](docs/comparisons.md) — where this fits against `vcrpy`, WireMock, mitmproxy, and the rest
 - [Admin API & Web UI](docs/admin.md) — the dashboard and JSON endpoints
 - [Architecture & Internals](docs/architecture.md) — how a request flows through the code
 - [Development Guide](docs/development.md) — local setup, tests, and linting
