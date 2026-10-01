@@ -240,6 +240,7 @@ mockrelay validate || exit 1
 - [Smart matching](matching.md) - strategies, operators, and debugging a miss
 - [Fixtures and redaction](fixtures.md) - the schema and secret masking
 - [Common recipes](recipes.md) - SDK redirection, retry testing, CI gating
+- [Comparisons](comparisons.md) - where this fits against vcrpy, WireMock, mitmproxy, and the rest
 - [CLI reference](cli.md) - every command and flag
 - [Configuration](configuration.md) - every key, with defaults
 - [Admin API and UI](admin.md) - the dashboard and JSON endpoints
